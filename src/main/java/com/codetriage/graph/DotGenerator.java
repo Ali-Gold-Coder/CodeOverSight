@@ -8,7 +8,7 @@ import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
-class DotGenerator {
+public class DotGenerator {
 
     public static String generate(List<FileInfo> files, Config config){
 

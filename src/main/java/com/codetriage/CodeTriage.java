@@ -41,7 +41,7 @@ public class CodeTriage {
             // parse files with timeout handling
             List<FileInfo> fileInfos = files.stream().limit(config.limit).map(file -> {
                 Optional<FileInfo> info = FileParser.parse(file, config);
-                 if( info.isEmpty()){
+                 if( !info.isPresent()){
                     System.err.println("Warning: Failed to parse "+ file.getName());
                  }
                  return info;

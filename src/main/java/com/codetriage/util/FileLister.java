@@ -3,6 +3,7 @@ package com.codetriage.util;
 import com.codetriage.cli.Config;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class FileLister {
                 throw new IllegalArgumentException("Folder not found: " + folderPath);
             }
 
-            Collection<File> files = FileUtils.listFiles(folder, includeFilter, null);
+            Collection<File> files = FileUtils.listFiles(folder, includeFilter, TrueFileFilter.INSTANCE);
 
             for( File file : files){
 

@@ -15,6 +15,7 @@ public class MethodSig {
     }
 
     public String signature() {
-        return String.format("%s(%s) → %s", name, params , returnType);
+        String type = returnType == null || returnType.isEmpty() ? "void" : returnType;
+        return String.format("%s(%s) -> %s", name, params , type);
     }
 }

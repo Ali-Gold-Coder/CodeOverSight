@@ -25,7 +25,7 @@ public class FileParser {
 
         try {
             Future<Optional<FileInfo>> future = executor.submit( () -> parseInternal(file) );
-            return future.get(2, TimeUnit.SECONDS);
+            return future.get(10, TimeUnit.SECONDS);
 
         } catch (TimeoutException e){
             System.out.println("Timeout parsing: " + file.getName());
@@ -39,14 +39,14 @@ public class FileParser {
     private static Optional<FileInfo> parseInternal(File file){
         try{
             ParseResult< CompilationUnit> result = new JavaParser().parse(file);
-            if(!result.isSuccessful() || result.getResult().isEmpty() ){
+            if(!result.isSuccessful() || !result.getResult().isPresent() ){
                 return Optional.empty();
             }
 
             CompilationUnit cu = result.getResult().get();
             Optional<ClassOrInterfaceDeclaration> classDecl = cu.findFirst(ClassOrInterfaceDeclaration.class);
 
-            if(classDecl.isEmpty()){
+            if(!classDecl.isPresent()){
                 return Optional.empty();
             }
 
@@ -70,7 +70,10 @@ public class FileParser {
 
         String params = method.getParameters().stream().map(p -> p.getType().toString()).collect(Collectors.joining(", "));
 
-        String returnType = method.getType().toString();
+        String returnType = method.getType().asString();
+        if(returnType == null || returnType.trim().isEmpty()){
+            returnType = "void";
+        }
 
         return new MethodSig(method.getNameAsString(), params, returnType);
 

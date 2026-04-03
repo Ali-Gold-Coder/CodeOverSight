@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeTriage Report</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/d3-graphviz@5.0.2/build/d3-graphviz.min.js"></script>
+    <style>
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        #graph { width: 75%; height: 100vh; float: left; }
+        #sidebar {
+            width: 25%; height: 100vh; float: right;
+            background: #f5f5f5; padding: 20px; box-sizing: border-box;
+            overflow-y: auto; border-left: 1px solid #ddd;
+        }
+        .method { padding: 8px; margin: 4px 0; background: white; border-radius: 4px; }
+        .external { color: #666; font-style: italic; }
+        h3 { margin-top: 0; }
+    </style>
+</head>
+<body>
+<div id="graph"></div>
+<div id="sidebar">
+    <h3>CodeTriage</h3>
+    <p>Click a node to see details</p>
+</div>
+
+<script>
+    const dot = `digraph CideTriage {
+  rankdir=LR;
+  node [shape=box, style=rounded];
+  edge [color=blue];
+
+  \"com.codetriage.cli.ArgsParser\" [label=\"ArgsParser|parse(String[]) -> Config\n\"];
+  \"com.codetriage.cli.Config\" [label=\"Config|\"];
+  \"com.codetriage.CodeOverSight.CodeOverSight\" [label=\"CodeOverSight|main(String[]) -> void\n\"];
+  \"com.codetriage.CodeTriage\" [label=\"CodeTriage|main(String[]) -> void\n\"];
+  \"com.codetriage.graph.DotGenerator\" [label=\"DotGenerator|generate(List<FileInfo>, Config) -> String\ngetNodeId(FileInfo) -> String\nbuildNodeLabel(FileInfo) -> String\nresolveImport(String, Set<String>, List<FileInfo>) -> String\n\"];
+  \"com.codetriage.model.FileInfo\" [label=\"FileInfo|\"];
+  \"com.codetriage.model.MethodSig\" [label=\"MethodSig|signature() -> String\n\"];
+  \"com.codetriage.parser.FileParser\" [label=\"FileParser|parse(File, Config) -> Optional<FileInfo>\nparseInternal(File) -> Optional<FileInfo>\ntoMethodSig(MethodDeclaration) -> MethodSig\n\"];
+  \"com.codetriage.render.HtmlRenderer\" [label=\"HtmlRenderer|render(String, List<FileInfo>) -> String\n\"];
+  \"com.codetriage.util.FileLister\" [label=\"FileLister|listFiles(Config) -> List<File>\n\"];
+  \"org.example.App\" [label=\"App|main(String[]) -> void\n\"];
+  \"com.codetriage.CodeTriage\" -> \"com.codetriage.cli.ArgsParser\" [color=blue];
+  \"com.codetriage.CodeTriage\" -> \"com.codetriage.cli.Config\" [color=blue];
+  \"com.codetriage.CodeTriage\" -> \"com.codetriage.graph.DotGenerator\" [color=blue];
+  \"com.codetriage.CodeTriage\" -> \"com.codetriage.model.FileInfo\" [color=blue];
+  \"com.codetriage.CodeTriage\" -> \"com.codetriage.parser.FileParser\" [color=blue];
+  \"com.codetriage.CodeTriage\" -> \"com.codetriage.render.HtmlRenderer\" [color=blue];
+  \"com.codetriage.CodeTriage\" -> \"com.codetriage.util.FileLister\" [color=blue];
+  \"com.codetriage.graph.DotGenerator\" -> \"com.codetriage.cli.Config\" [color=blue];
+  \"com.codetriage.graph.DotGenerator\" -> \"com.codetriage.model.FileInfo\" [color=blue];
+  \"com.codetriage.graph.DotGenerator\" -> \"com.codetriage.model.MethodSig\" [color=blue];
+  \"com.codetriage.parser.FileParser\" -> \"com.codetriage.cli.Config\" [color=blue];
+  \"com.codetriage.parser.FileParser\" -> \"com.codetriage.model.FileInfo\" [color=blue];
+  \"com.codetriage.parser.FileParser\" -> \"com.codetriage.model.MethodSig\" [color=blue];
+  \"com.codetriage.render.HtmlRenderer\" -> \"com.codetriage.model.FileInfo\" [color=blue];
+  \"com.codetriage.util.FileLister\" -> \"com.codetriage.cli.Config\" [color=blue];
+}`;
+    const fileInfo = [{"path":"src\\main\\java\\com\\codetriage\\cli\\ArgsParser.java","className":"ArgsParser","packageName":"com.codetriage.cli","methods":[{"name":"parse","params":"String[]","returnType":"Config"}],"imports":["org.apache.commons.cli","java.util.Arrays","java.util.List"]},{"path":"src\\main\\java\\com\\codetriage\\cli\\Config.java","className":"Config","packageName":"com.codetriage.cli","methods":[],"imports":["java.util.List"]},{"path":"src\\main\\java\\com\\codetriage\\CodeOverSight\\CodeOverSight.java","className":"CodeOverSight","packageName":"com.codetriage.CodeOverSight","methods":[{"name":"main","params":"String[]","returnType":"void"}],"imports":[]},{"path":"src\\main\\java\\com\\codetriage\\CodeTriage.java","className":"CodeTriage","packageName":"com.codetriage","methods":[{"name":"main","params":"String[]","returnType":"void"}],"imports":["com.codetriage.cli.ArgsParser","com.codetriage.cli.Config","com.codetriage.graph.DotGenerator","com.codetriage.model.FileInfo","com.codetriage.parser.FileParser","com.codetriage.render.HtmlRenderer","com.codetriage.util.FileLister","java.awt.Desktop","java.io.File","java.io.IOException","java.nio.file.Files","java.nio.file.Paths","java.util.List","java.util.Optional","java.util.stream.Collectors"]},{"path":"src\\main\\java\\com\\codetriage\\graph\\DotGenerator.java","className":"DotGenerator","packageName":"com.codetriage.graph","methods":[{"name":"generate","params":"List\u003cFileInfo\u003e, Config","returnType":"String"},{"name":"getNodeId","params":"FileInfo","returnType":"String"},{"name":"buildNodeLabel","params":"FileInfo","returnType":"String"},{"name":"resolveImport","params":"String, Set\u003cString\u003e, List\u003cFileInfo\u003e","returnType":"String"}],"imports":["com.codetriage.cli.Config","com.codetriage.model.FileInfo","com.codetriage.model.MethodSig","java.io.File","java.util","java.util.stream.Collectors"]},{"path":"src\\main\\java\\com\\codetriage\\model\\FileInfo.java","className":"FileInfo","packageName":"com.codetriage.model","methods":[],"imports":["java.util.List"]},{"path":"src\\main\\java\\com\\codetriage\\model\\MethodSig.java","className":"MethodSig","packageName":"com.codetriage.model","methods":[{"name":"signature","params":"","returnType":"String"}],"imports":[]},{"path":"src\\main\\java\\com\\codetriage\\parser\\FileParser.java","className":"FileParser","packageName":"com.codetriage.parser","methods":[{"name":"parse","params":"File, Config","returnType":"Optional\u003cFileInfo\u003e"},{"name":"parseInternal","params":"File","returnType":"Optional\u003cFileInfo\u003e"},{"name":"toMethodSig","params":"MethodDeclaration","returnType":"MethodSig"}],"imports":["com.codetriage.cli.Config","com.codetriage.model.FileInfo","com.codetriage.model.MethodSig","com.github.javaparser.JavaParser","com.github.javaparser.ParseResult","com.github.javaparser.ast.CompilationUnit","com.github.javaparser.ast.body.ClassOrInterfaceDeclaration","com.github.javaparser.ast.body.MethodDeclaration","com.github.javaparser.ast.expr.SimpleName","java.io.File","java.util.List","java.util.Optional","java.util.concurrent","java.util.stream.Collectors"]},{"path":"src\\main\\java\\com\\codetriage\\render\\HtmlRenderer.java","className":"HtmlRenderer","packageName":"com.codetriage.render","methods":[{"name":"render","params":"String, List\u003cFileInfo\u003e","returnType":"String"}],"imports":["com.codetriage.model.FileInfo","com.google.gson.Gson","org.apache.commons.io.IOUtils","java.io.InputStream","java.nio.charset.StandardCharsets","java.util.List"]},{"path":"src\\main\\java\\com\\codetriage\\util\\FileLister.java","className":"FileLister","packageName":"com.codetriage.util","methods":[{"name":"listFiles","params":"Config","returnType":"List\u003cFile\u003e"}],"imports":["com.codetriage.cli.Config","org.apache.commons.io.FileUtils","org.apache.commons.io.filefilter.WildcardFileFilter","org.apache.commons.io.filefilter.TrueFileFilter","java.io.File","java.util.ArrayList","java.util.Collection","java.util.List"]},{"path":"src\\main\\java\\org\\example\\App.java","className":"App","packageName":"org.example","methods":[{"name":"main","params":"String[]","returnType":"void"}],"imports":[]}];
+
+    const fileMap = new Map(fileInfo.map(f => [f.className, f]));
+
+    d3.select("#graph").graphviz()
+        .fit(true)
+        .zoom(true)
+        .renderDot(dot);
+
+    // Click handler
+    d3.select("#graph").selectAll(".node").on("click", function(event) {
+        const nodeName = this.querySelector("text").textContent.split("|")[0];
+        const file = fileMap.get(nodeName);
+        const sidebar = document.getElementById("sidebar");
+
+        if (file) {
+            sidebar.innerHTML = `
+                <h3>${file.className}</h3>
+                <p><strong>Package:</strong> ${file.packageName || "default"}</p>
+                <p><strong>Path:</strong> ${file.path}</p>
+                <h4>Methods:</h4>
+                ${file.methods.map(m => `
+                    <div class="method">${m.name}(${m.params}) Å® ${m.returnType}</div>
+                `).join("")}
+            `;
+        } else {
+            sidebar.innerHTML = `
+                <h3>${nodeName}</h3>
+                <p class="external">External dependency (not parsed)</p>
+            `;
+        }
+    });
+</script>
+</body>
+</html>

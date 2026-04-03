@@ -13,7 +13,7 @@ public class HtmlRenderer {
 
     public static String render (String dot, List<FileInfo> fileInfos) throws Exception{
 
-        InputStream templateStream = HtmlRenderer.class.getClassLoader().getResourceAsStream("templete.html");
+        InputStream templateStream = HtmlRenderer.class.getClassLoader().getResourceAsStream("template.html");
 
         if(templateStream == null){
             throw new RuntimeException("template.html not found in resources");
@@ -22,7 +22,7 @@ public class HtmlRenderer {
         String template = new String (templateStream.readAllBytes(), StandardCharsets.UTF_8);
         String fileInfoJson = gson.toJson(fileInfos);
 
-        return template.replace("{{DOT}}", dot).replace("{{FILE_INFO_JSON", fileInfoJson);
+        return template.replace("{{DOT}}", dot).replace("{{FILE_INFO_JSON}}", fileInfoJson);
 
     }
 }

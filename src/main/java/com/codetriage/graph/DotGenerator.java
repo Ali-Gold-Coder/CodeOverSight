@@ -27,7 +27,7 @@ public class DotGenerator {
 
             String nodeId = getNodeId(file);
             String label = buildNodeLabel(file);
-            dot.append(String.format("  \"%s\" [label=\"%s\"];%n", nodeId, label));
+            dot.append(String.format("  \\\"%s\\\" -> \\\"%s\\\" [color=%s];%n", nodeId, label));
 
 
         }

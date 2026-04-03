@@ -68,7 +68,7 @@ public class FileParser {
 
     private static MethodSig toMethodSig(MethodDeclaration method){
 
-        String params = method.getParameters().stream().map(p -> p.getType().toString()).collect(Collectors.joining(". "));
+        String params = method.getParameters().stream().map(p -> p.getType().toString()).collect(Collectors.joining(", "));
 
         String returnType = method.getType().toString();
 

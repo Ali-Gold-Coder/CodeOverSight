@@ -26,20 +26,23 @@ public class ArgsParser {
 
         Config config = new Config();
 
-        config.folders = Arrays.asList(cmd.getOptionValue("folder").split(","));
+        config.folders = Arrays.asList(cmd.getOptionValue("folders").split(","));
         if(cmd.hasOption("depth")){
             config.depth = Integer.parseInt(cmd.getOptionValue("depth"));
         }
 
+        if(cmd.hasOption("limit")){
+            config.limit = Integer.parseInt(cmd.getOptionValue("limit"));
+        }
         if(cmd.hasOption("include")){
-            config.depth = Integer.parseInt(cmd.getOptionValue("include"));
+            config.include = cmd.getOptionValue("include");
         }
         if(cmd.hasOption("exclude")){
-            config.depth = Integer.parseInt(cmd.getOptionValue("exclude"));
+            config.exclude = cmd.getOptionValue("exclude");
         }
 
         if(cmd.hasOption("output")){
-            config.depth = Integer.parseInt(cmd.getOptionValue("output"));
+            config.output = cmd.getOptionValue("output");
         }
 
         if( config.depth < 0 || config.depth > 3){

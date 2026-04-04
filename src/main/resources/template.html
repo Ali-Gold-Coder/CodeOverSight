@@ -7,23 +7,85 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://unpkg.com/d3-graphviz@5.0.2/build/d3-graphviz.min.js"></script>
     <style>
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        #graph { width: 75%; height: 100vh; float: left; }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #fafafa; }
+        #graph { width: 60%; height: 100vh; float: left; background: white; }
         #sidebar {
-            width: 25%; height: 100vh; float: right;
-            background: #f5f5f5; padding: 20px; box-sizing: border-box;
-            overflow-y: auto; border-left: 1px solid #ddd;
+            width: 40%; height: 100vh; float: right;
+            background: linear-gradient(135deg, #f5f7fa 0%, #f0f2f5 100%);
+            padding: 0; box-sizing: border-box;
+            overflow: hidden; border-left: 2px solid #ddd;
+            display: flex; flex-direction: column;
         }
-        .method { padding: 8px; margin: 4px 0; background: white; border-radius: 4px; }
-        .external { color: #666; font-style: italic; }
-        h3 { margin-top: 0; }
+        #details {
+            flex: 1; padding: 24px; overflow-y: auto;
+        }
+        #details h3 {
+            margin: 0 0 8px 0; font-size: 18px; color: #1a1a1a;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .badge {
+            display: inline-block; padding: 3px 10px; border-radius: 12px;
+            font-size: 12px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-class { background: #e3f2fd; color: #1565c0; }
+        .badge-external { background: #f3e5f5; color: #6a1b9a; }
+        p { margin: 8px 0; color: #555; line-height: 1.5; font-size: 14px; }
+        .info-box {
+            background: white; padding: 12px 14px; border-radius: 8px;
+            margin: 10px 0; border-left: 4px solid #2196F3; font-size: 13px;
+            word-break: break-all;
+        }
+        h4 { margin: 16px 0 12px 0; font-size: 14px; font-weight: 600; color: #333; text-transform: uppercase; letter-spacing: 0.5px; }
+        .method {
+            padding: 12px 14px; margin: 10px 0; background: white;
+            border-radius: 8px; border-left: 4px solid #4CAF50;
+            font-size: 11px; font-family: 'Monaco', 'Courier New', monospace;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transition: all 0.2s ease;
+            line-height: 1.4;
+        }
+        .method:hover { box-shadow: 0 2px 6px rgba(0,0,0,0.12); transform: translateX(2px); }
+        .method-name { color: #1565c0; font-weight: 600; }
+        .method-params { color: #666; }
+        .method-return { color: #c0123c; font-style: italic; }
+        .external { color: #999; font-style: italic; font-size: 13px; }
+        .intro-text { margin: 0 0 20px 0; padding: 12px 14px; background: #e8f5e9; border-radius: 8px; border-left: 4px solid #4CAF50; font-size: 13px; color: #2e7d32; }
+        .import-tag {
+            display: inline-block; padding: 4px 8px; background: #fff3e0; color: #e65100;
+            border-radius: 4px; font-size: 11px; margin: 4px 4px 4px 0;
+            font-family: 'Monaco', 'Courier New', monospace; word-break: break-all;
+            border-left: 2px solid #ff6f00;
+        }
+        .imports-section { margin: 16px 0 0 0; }
+        #file-tree {
+            flex: 0 0 40%; background: white; border-top: 2px solid #ddd;
+            overflow-y: auto; padding: 16px; font-size: 12px;
+        }
+        #file-tree h5 {
+            margin: 0 0 12px 0; font-size: 13px; font-weight: 600; text-transform: uppercase; color: #333;
+        }
+        .file-item {
+            padding: 8px 12px; margin: 4px 0; background: white; border-radius: 4px;
+            border-left: 3px solid #9C27B0; cursor: pointer; transition: 0.2s;
+            font-family: 'Monaco', 'Courier New', monospace; word-break: break-all;
+        }
+        .file-item:hover { background: #f5f5f5; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .file-item.active { background: #e8eaf6; border-left-color: #3f51b5; }
     </style>
 </head>
 <body>
 <div id="graph"></div>
 <div id="sidebar">
-    <h3>CodeTriage</h3>
-    <p>Click a node to see details</p>
+    <div id="details">
+        <h3>📊 CodeTriage Analysis</h3>
+        <div class="intro-text">Click a node in the graph to see class and method details</div>
+    </div>
+    <div id="file-tree">
+        <h5>📁 File Directory</h5>
+        <div id="tree-content"></div>
+    </div>
 </div>
 
 <script>
@@ -32,34 +94,88 @@
 
     const fileMap = new Map(fileInfo.map(f => [f.className, f]));
 
+    // Populate file tree on load
+    function populateFileTree() {
+        const treeContent = document.getElementById('tree-content');
+        fileInfo.forEach(file => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.textContent = file.className;
+            fileItem.onclick = () => showFileDetails(file);
+            treeContent.appendChild(fileItem);
+        });
+    }
+
+    // Show detailed information when clicking on a file in tree
+    function showFileDetails(file) {
+        const details = document.getElementById('details');
+        
+        let importsHtml = '';
+        if(file.imports && file.imports.length > 0) {
+            importsHtml = `
+                <h4>Imports (${file.imports.length})</h4>
+                <div class="imports-section">
+                    ${file.imports.map(imp => `<div class="import-tag">${imp}</div>`).join('')}
+                </div>
+            `;
+        }
+
+        let methodsHtml = '';
+        if(file.methods && file.methods.length > 0){
+            methodsHtml = file.methods.map(m => `
+                <div class="method">
+                    <span class="method-name">${m.name}</span><span class="method-params">(${m.params})</span>
+                    <br/><span class="method-return">→ ${m.returnType}</span>
+                </div>
+            `).join('');
+        } else {
+            methodsHtml = '<div class="method" style="color: #999;">(no methods)</div>';
+        }
+
+        details.innerHTML = `
+            <h3><span class="badge badge-class">Class</span> ${file.className}</h3>
+            <div class="info-box"><strong>Package:</strong> ${file.packageName || "default"}</div>
+            <div class="info-box"><strong>File:</strong> ${file.path.split("\\\\").pop()}</div>
+            <h4>Methods (${file.methods ? file.methods.length : 0})</h4>
+            ${methodsHtml}
+            ${importsHtml}
+        `;
+
+        // Highlight active item
+        document.querySelectorAll('.file-item').forEach(item => item.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
     d3.select("#graph").graphviz()
         .fit(true)
         .zoom(true)
         .renderDot(dot);
 
-    // Click handler
+    // Click handler for graph nodes
     d3.select("#graph").selectAll(".node").on("click", function(event) {
-        const nodeName = this.querySelector("text").textContent.split("|")[0];
+        const nodeName = this.querySelector("text").textContent.split("|")[0].replace("Class: ", "");
         const file = fileMap.get(nodeName);
-        const sidebar = document.getElementById("sidebar");
 
         if (file) {
-            sidebar.innerHTML = `
-                <h3>${file.className}</h3>
-                <p><strong>Package:</strong> ${file.packageName || "default"}</p>
-                <p><strong>Path:</strong> ${file.path}</p>
-                <h4>Methods:</h4>
-                ${file.methods.map(m => `
-                    <div class="method">${m.name}(${m.params}) → ${m.returnType}</div>
-                `).join("")}
-            `;
+            showFileDetails(file);
+            // Highlight in tree
+            document.querySelectorAll('.file-item').forEach(item => {
+                if(item.textContent === file.className) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
         } else {
-            sidebar.innerHTML = `
-                <h3>${nodeName}</h3>
-                <p class="external">External dependency (not parsed)</p>
+            document.getElementById('details').innerHTML = `
+                <h3><span class="badge badge-external">External</span> ${nodeName}</h3>
+                <p class="external">This is an external dependency that was not parsed in the analysis.</p>
             `;
         }
     });
+
+    // Initialize on page load
+    populateFileTree();
 </script>
 </body>
 </html>

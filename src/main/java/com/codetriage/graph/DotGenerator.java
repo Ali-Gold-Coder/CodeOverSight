@@ -17,23 +17,37 @@ public class DotGenerator {
         StringBuilder dot = new StringBuilder();
 
         dot.append("digraph CideTriage {\n");
-        dot.append("  rankdir=LR;\n");
-        dot.append("  node [shape=box, style=rounded];\n");
-        dot.append("  edge [color=blue];\n\n");
+        dot.append("  rankdir=TB;\n");
+        dot.append("  splines=ortho;\n");
+        dot.append("  nodesep=0.5;\n");
+        dot.append("  ranksep=1.2;\n");
+        dot.append("  node [shape=box, style=\"rounded,filled\", fillcolor=\"#e8f4f8\", fontname=\"Arial\"];\n");
+        dot.append("  edge [color=\"#666\", penwidth=1.5];\n\n");
 
+        // Group by package
+        Map<String, List<FileInfo>> byPackage = files.stream()
+            .collect(Collectors.groupingBy(f -> f.packageName.isEmpty() ? "default" : f.packageName));
 
-        // Nodes
-        for (FileInfo file : files){
+        // Create subgraph clusters for each package
+        for (Map.Entry<String, List<FileInfo>> entry : byPackage.entrySet()) {
+            String pkgName = entry.getKey();
+            String escapedPkg = pkgName.replace(".", "_");
+            List<FileInfo> pkgFiles = entry.getValue();
 
-            String nodeId = getNodeId(file);
-            String label = buildNodeLabel(file);
-            dot.append(String.format("  \\\"%s\\\" [label=\\\"%s\\\"];%n", nodeId, label));
+            dot.append(String.format("  subgraph cluster_%s {\n", escapedPkg));
+            dot.append(String.format("    label=\"%s\";\n", pkgName));
+            dot.append("    style=filled; fillcolor=\"#f0f0f0\"; color=\"#999\"; penwidth=2;\n");
 
-
+            // Add nodes for this package
+            for (FileInfo file : pkgFiles) {
+                String nodeId = getNodeId(file);
+                String label = buildNodeLabel(file);
+                dot.append(String.format("    \\\"%s\\\" [label=\\\"%s\\\"];\n", nodeId, label));
+            }
+            dot.append("  }\n\n");
         }
 
         // Edges
-
         for(FileInfo file : files){
             String formId = getNodeId(file);
 
@@ -41,8 +55,8 @@ public class DotGenerator {
                 String toId = resolveImport(importName, internalClasses, files);
 
                 if(toId != null){
-                    String color = internalClasses.contains(importName) ? "blue" : "gray";
-                    dot.append(String.format("  \\\"%s\\\" -> \\\"%s\\\" [color=%s];%n", formId, toId, color));
+                    String color = internalClasses.contains(importName) ? "#2196F3" : "#999";
+                    dot.append(String.format("  \\\"%s\\\" -> \\\"%s\\\" [color=\"%s\"];\n", formId, toId, color));
                 }
             }
         }
@@ -57,10 +71,15 @@ public class DotGenerator {
     }
 
     private static String buildNodeLabel(FileInfo file){
-        StringBuilder label = new StringBuilder(file.className + "|");
+        StringBuilder label = new StringBuilder();
+        label.append("Class: ").append(file.className).append("|");
 
-        for(MethodSig method : file.methods){
-            label.append(method.signature()).append("\\n");
+        if(file.methods.isEmpty()){
+            label.append("(no methods)");
+        } else {
+            for(MethodSig method : file.methods){
+                label.append("\\nMethod: ").append(method.signature());
+            }
         }
 
         return label.toString().replace("\"", "\\\"");

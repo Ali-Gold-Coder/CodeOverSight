@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeTriage Report</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/d3-graphviz@5.0.2/build/d3-graphviz.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #fafafa; }
+        #graph { width: 60%; height: 100vh; float: left; background: white; }
+        #sidebar {
+            width: 40%; height: 100vh; float: right;
+            background: linear-gradient(135deg, #f5f7fa 0%, #f0f2f5 100%);
+            padding: 0; box-sizing: border-box;
+            overflow: hidden; border-left: 2px solid #ddd;
+            display: flex; flex-direction: column;
+        }
+        #details {
+            flex: 1; padding: 24px; overflow-y: auto;
+        }
+        #details h3 {
+            margin: 0 0 8px 0; font-size: 18px; color: #1a1a1a;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .badge {
+            display: inline-block; padding: 3px 10px; border-radius: 12px;
+            font-size: 12px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-class { background: #e3f2fd; color: #1565c0; }
+        .badge-external { background: #f3e5f5; color: #6a1b9a; }
+        p { margin: 8px 0; color: #555; line-height: 1.5; font-size: 14px; }
+        .info-box {
+            background: white; padding: 12px 14px; border-radius: 8px;
+            margin: 10px 0; border-left: 4px solid #2196F3; font-size: 13px;
+            word-break: break-all;
+        }
+        h4 { margin: 16px 0 12px 0; font-size: 14px; font-weight: 600; color: #333; text-transform: uppercase; letter-spacing: 0.5px; }
+        .method {
+            padding: 12px 14px; margin: 10px 0; background: white;
+            border-radius: 8px; border-left: 4px solid #4CAF50;
+            font-size: 11px; font-family: 'Monaco', 'Courier New', monospace;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transition: all 0.2s ease;
+            line-height: 1.4;
+        }
+        .method:hover { box-shadow: 0 2px 6px rgba(0,0,0,0.12); transform: translateX(2px); }
+        .method-name { color: #1565c0; font-weight: 600; }
+        .method-params { color: #666; }
+        .method-return { color: #c0123c; font-style: italic; }
+        .external { color: #999; font-style: italic; font-size: 13px; }
+        .intro-text { margin: 0 0 20px 0; padding: 12px 14px; background: #e8f5e9; border-radius: 8px; border-left: 4px solid #4CAF50; font-size: 13px; color: #2e7d32; }
+        .import-tag {
+            display: inline-block; padding: 4px 8px; background: #fff3e0; color: #e65100;
+            border-radius: 4px; font-size: 11px; margin: 4px 4px 4px 0;
+            font-family: 'Monaco', 'Courier New', monospace; word-break: break-all;
+            border-left: 2px solid #ff6f00;
+        }
+        .imports-section { margin: 16px 0 0 0; }
+        #file-tree {
+            flex: 0 0 40%; background: white; border-top: 2px solid #ddd;
+            overflow-y: auto; padding: 16px; font-size: 12px;
+        }
+        #file-tree h5 {
+            margin: 0 0 12px 0; font-size: 13px; font-weight: 600; text-transform: uppercase; color: #333;
+        }
+        .file-item {
+            padding: 8px 12px; margin: 4px 0; background: white; border-radius: 4px;
+            border-left: 3px solid #9C27B0; cursor: pointer; transition: 0.2s;
+            font-family: 'Monaco', 'Courier New', monospace; word-break: break-all;
+        }
+        .file-item:hover { background: #f5f5f5; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .file-item.active { background: #e8eaf6; border-left-color: #3f51b5; }
+    </style>
+</head>
+<body>
+<div id="graph"></div>
+<div id="sidebar">
+    <div id="details">
+        <h3>📊 CodeTriage Analysis</h3>
+        <div class="intro-text">Click a node in the graph to see class and method details</div>
+    </div>
+    <div id="file-tree">
+        <h5>📁 File Directory</h5>
+        <div id="tree-content"></div>
+    </div>
+</div>
+
+<script>
+    const dot = `digraph CideTriage {
+  rankdir=TB;
+  splines=ortho;
+  nodesep=0.5;
+  ranksep=1.2;
+  node [shape=box, style="rounded,filled", fillcolor="#e8f4f8", fontname="Arial"];
+  edge [color="#666", penwidth=1.5];
+
+  subgraph cluster_org_example {
+    label="org.example";
+    style=filled; fillcolor="#f0f0f0"; color="#999"; penwidth=2;
+    \"org.example.App\" [label=\"Class: App|\nMethod: main(String[]) → void\"];
+  }
+
+  subgraph cluster_com_codetriage_graph {
+    label="com.codetriage.graph";
+    style=filled; fillcolor="#f0f0f0"; color="#999"; penwidth=2;
+    \"com.codetriage.graph.DotGenerator\" [label=\"Class: DotGenerator|\nMethod: generate(List<FileInfo>, Config) → String\nMethod: getNodeId(FileInfo) → String\nMethod: buildNodeLabel(FileInfo) → String\nMethod: resolveImport(String, Set<String>, List<FileInfo>) → String\"];
+  }
+
+  subgraph cluster_com_codetriage_render {
+    label="com.codetriage.render";
+    style=filled; fillcolor="#f0f0f0"; color="#999"; penwidth=2;
+    \"com.codetriage.render.HtmlRenderer\" [label=\"Class: HtmlRenderer|\nMethod: render(String, List<FileInfo>) → String\"];
+  }
+
+  subgraph cluster_com_codetriage_model {
+    label="com.codetriage.model";
+    style=filled; fillcolor="#f0f0f0"; color="#999"; penwidth=2;
+    \"com.codetriage.model.FileInfo\" [label=\"Class: FileInfo|(no methods)\"];
+    \"com.codetriage.model.MethodSig\" [label=\"Class: MethodSig|\nMethod: signature() → String\"];
+  }
+
+  subgraph cluster_com_codetriage_util {
+    label="com.codetriage.util";
+    style=filled; fillcolor="#f0f0f0"; color="#999"; penwidth=2;
+    \"com.codetriage.util.FileLister\" [label=\"Class: FileLister|\nMethod: listFiles(Config) → List<File>\"];
+  }
+
+  subgraph cluster_com_codetriage {
+    label="com.codetriage";
+    style=filled; fillcolor="#f0f0f0"; color="#999"; penwidth=2;
+    \"com.codetriage.CodeTriage\" [label=\"Class: CodeTriage|\nMethod: main(String[]) → void\"];
+  }
+
+  subgraph cluster_com_codetriage_CodeOverSight {
+    label="com.codetriage.CodeOverSight";
+    style=filled; fillcolor="#f0f0f0"; color="#999"; penwidth=2;
+    \"com.codetriage.CodeOverSight.CodeOverSight\" [label=\"Class: CodeOverSight|\nMethod: main(String[]) → void\"];
+  }
+
+  subgraph cluster_com_codetriage_parser {
+    label="com.codetriage.parser";
+    style=filled; fillcolor="#f0f0f0"; color="#999"; penwidth=2;
+    \"com.codetriage.parser.FileParser\" [label=\"Class: FileParser|\nMethod: parse(File, Config) → Optional<FileInfo>\nMethod: parseInternal(File) → Optional<FileInfo>\nMethod: toMethodSig(MethodDeclaration) → MethodSig\"];
+  }
+
+  subgraph cluster_com_codetriage_cli {
+    label="com.codetriage.cli";
+    style=filled; fillcolor="#f0f0f0"; color="#999"; penwidth=2;
+    \"com.codetriage.cli.ArgsParser\" [label=\"Class: ArgsParser|\nMethod: parse(String[]) → Config\"];
+    \"com.codetriage.cli.Config\" [label=\"Class: Config|(no methods)\"];
+  }
+
+  \"com.codetriage.CodeTriage\" -> \"com.codetriage.cli.ArgsParser\" [color="#2196F3"];
+  \"com.codetriage.CodeTriage\" -> \"com.codetriage.cli.Config\" [color="#2196F3"];
+  \"com.codetriage.CodeTriage\" -> \"com.codetriage.graph.DotGenerator\" [color="#2196F3"];
+  \"com.codetriage.CodeTriage\" -> \"com.codetriage.model.FileInfo\" [color="#2196F3"];
+  \"com.codetriage.CodeTriage\" -> \"com.codetriage.parser.FileParser\" [color="#2196F3"];
+  \"com.codetriage.CodeTriage\" -> \"com.codetriage.render.HtmlRenderer\" [color="#2196F3"];
+  \"com.codetriage.CodeTriage\" -> \"com.codetriage.util.FileLister\" [color="#2196F3"];
+  \"com.codetriage.graph.DotGenerator\" -> \"com.codetriage.cli.Config\" [color="#2196F3"];
+  \"com.codetriage.graph.DotGenerator\" -> \"com.codetriage.model.FileInfo\" [color="#2196F3"];
+  \"com.codetriage.graph.DotGenerator\" -> \"com.codetriage.model.MethodSig\" [color="#2196F3"];
+  \"com.codetriage.parser.FileParser\" -> \"com.codetriage.cli.Config\" [color="#2196F3"];
+  \"com.codetriage.parser.FileParser\" -> \"com.codetriage.model.FileInfo\" [color="#2196F3"];
+  \"com.codetriage.parser.FileParser\" -> \"com.codetriage.model.MethodSig\" [color="#2196F3"];
+  \"com.codetriage.render.HtmlRenderer\" -> \"com.codetriage.model.FileInfo\" [color="#2196F3"];
+  \"com.codetriage.util.FileLister\" -> \"com.codetriage.cli.Config\" [color="#2196F3"];
+}`;
+    const fileInfo = [{"path":"src\\main\\java\\com\\codetriage\\cli\\ArgsParser.java","className":"ArgsParser","packageName":"com.codetriage.cli","methods":[{"name":"parse","params":"String[]","returnType":"Config"}],"imports":["org.apache.commons.cli","java.util.Arrays","java.util.List"]},{"path":"src\\main\\java\\com\\codetriage\\cli\\Config.java","className":"Config","packageName":"com.codetriage.cli","methods":[],"imports":["java.util.List"]},{"path":"src\\main\\java\\com\\codetriage\\CodeOverSight\\CodeOverSight.java","className":"CodeOverSight","packageName":"com.codetriage.CodeOverSight","methods":[{"name":"main","params":"String[]","returnType":"void"}],"imports":[]},{"path":"src\\main\\java\\com\\codetriage\\CodeTriage.java","className":"CodeTriage","packageName":"com.codetriage","methods":[{"name":"main","params":"String[]","returnType":"void"}],"imports":["com.codetriage.cli.ArgsParser","com.codetriage.cli.Config","com.codetriage.graph.DotGenerator","com.codetriage.model.FileInfo","com.codetriage.parser.FileParser","com.codetriage.render.HtmlRenderer","com.codetriage.util.FileLister","java.awt.Desktop","java.io.File","java.io.IOException","java.nio.file.Files","java.nio.file.Paths","java.util.List","java.util.Optional","java.util.stream.Collectors"]},{"path":"src\\main\\java\\com\\codetriage\\graph\\DotGenerator.java","className":"DotGenerator","packageName":"com.codetriage.graph","methods":[{"name":"generate","params":"List\u003cFileInfo\u003e, Config","returnType":"String"},{"name":"getNodeId","params":"FileInfo","returnType":"String"},{"name":"buildNodeLabel","params":"FileInfo","returnType":"String"},{"name":"resolveImport","params":"String, Set\u003cString\u003e, List\u003cFileInfo\u003e","returnType":"String"}],"imports":["com.codetriage.cli.Config","com.codetriage.model.FileInfo","com.codetriage.model.MethodSig","java.io.File","java.util","java.util.stream.Collectors"]},{"path":"src\\main\\java\\com\\codetriage\\model\\FileInfo.java","className":"FileInfo","packageName":"com.codetriage.model","methods":[],"imports":["java.util.List"]},{"path":"src\\main\\java\\com\\codetriage\\model\\MethodSig.java","className":"MethodSig","packageName":"com.codetriage.model","methods":[{"name":"signature","params":"","returnType":"String"}],"imports":[]},{"path":"src\\main\\java\\com\\codetriage\\parser\\FileParser.java","className":"FileParser","packageName":"com.codetriage.parser","methods":[{"name":"parse","params":"File, Config","returnType":"Optional\u003cFileInfo\u003e"},{"name":"parseInternal","params":"File","returnType":"Optional\u003cFileInfo\u003e"},{"name":"toMethodSig","params":"MethodDeclaration","returnType":"MethodSig"}],"imports":["com.codetriage.cli.Config","com.codetriage.model.FileInfo","com.codetriage.model.MethodSig","com.github.javaparser.JavaParser","com.github.javaparser.ParseResult","com.github.javaparser.ast.CompilationUnit","com.github.javaparser.ast.body.ClassOrInterfaceDeclaration","com.github.javaparser.ast.body.MethodDeclaration","com.github.javaparser.ast.expr.SimpleName","java.io.File","java.util.List","java.util.Optional","java.util.concurrent","java.util.stream.Collectors"]},{"path":"src\\main\\java\\com\\codetriage\\render\\HtmlRenderer.java","className":"HtmlRenderer","packageName":"com.codetriage.render","methods":[{"name":"render","params":"String, List\u003cFileInfo\u003e","returnType":"String"}],"imports":["com.codetriage.model.FileInfo","com.google.gson.Gson","java.io.InputStream","java.nio.charset.StandardCharsets","java.util.List"]},{"path":"src\\main\\java\\com\\codetriage\\util\\FileLister.java","className":"FileLister","packageName":"com.codetriage.util","methods":[{"name":"listFiles","params":"Config","returnType":"List\u003cFile\u003e"}],"imports":["com.codetriage.cli.Config","org.apache.commons.io.FileUtils","org.apache.commons.io.filefilter.TrueFileFilter","org.apache.commons.io.filefilter.WildcardFileFilter","java.io.File","java.util.ArrayList","java.util.Collection","java.util.List"]},{"path":"src\\main\\java\\org\\example\\App.java","className":"App","packageName":"org.example","methods":[{"name":"main","params":"String[]","returnType":"void"}],"imports":[]}];
+
+    const fileMap = new Map(fileInfo.map(f => [f.className, f]));
+
+    // Populate file tree on load
+    function populateFileTree() {
+        const treeContent = document.getElementById('tree-content');
+        fileInfo.forEach(file => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.textContent = file.className;
+            fileItem.onclick = () => showFileDetails(file);
+            treeContent.appendChild(fileItem);
+        });
+    }
+
+    // Show detailed information when clicking on a file in tree
+    function showFileDetails(file) {
+        const details = document.getElementById('details');
+        
+        let importsHtml = '';
+        if(file.imports && file.imports.length > 0) {
+            importsHtml = `
+                <h4>Imports (${file.imports.length})</h4>
+                <div class="imports-section">
+                    ${file.imports.map(imp => `<div class="import-tag">${imp}</div>`).join('')}
+                </div>
+            `;
+        }
+
+        let methodsHtml = '';
+        if(file.methods && file.methods.length > 0){
+            methodsHtml = file.methods.map(m => `
+                <div class="method">
+                    <span class="method-name">${m.name}</span><span class="method-params">(${m.params})</span>
+                    <br/><span class="method-return">→ ${m.returnType}</span>
+                </div>
+            `).join('');
+        } else {
+            methodsHtml = '<div class="method" style="color: #999;">(no methods)</div>';
+        }
+
+        details.innerHTML = `
+            <h3><span class="badge badge-class">Class</span> ${file.className}</h3>
+            <div class="info-box"><strong>Package:</strong> ${file.packageName || "default"}</div>
+            <div class="info-box"><strong>File:</strong> ${file.path.split("\\\\").pop()}</div>
+            <h4>Methods (${file.methods ? file.methods.length : 0})</h4>
+            ${methodsHtml}
+            ${importsHtml}
+        `;
+
+        // Highlight active item
+        document.querySelectorAll('.file-item').forEach(item => item.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    d3.select("#graph").graphviz()
+        .fit(true)
+        .zoom(true)
+        .renderDot(dot);
+
+    // Click handler for graph nodes
+    d3.select("#graph").selectAll(".node").on("click", function(event) {
+        const nodeName = this.querySelector("text").textContent.split("|")[0].replace("Class: ", "");
+        const file = fileMap.get(nodeName);
+
+        if (file) {
+            showFileDetails(file);
+            // Highlight in tree
+            document.querySelectorAll('.file-item').forEach(item => {
+                if(item.textContent === file.className) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        } else {
+            document.getElementById('details').innerHTML = `
+                <h3><span class="badge badge-external">External</span> ${nodeName}</h3>
+                <p class="external">This is an external dependency that was not parsed in the analysis.</p>
+            `;
+        }
+    });
+
+    // Initialize on page load
+    populateFileTree();
+</script>
+</body>
+</html>

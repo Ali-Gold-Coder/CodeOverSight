@@ -19,8 +19,8 @@ public class DotGenerator {
         dot.append("digraph CideTriage {\n");
         dot.append("  rankdir=TB;\n");
         dot.append("  splines=ortho;\n");
-        dot.append("  nodesep=0.5;\n");
-        dot.append("  ranksep=1.2;\n");
+        dot.append("  nodesep=1.5;\n");
+        dot.append("  ranksep=3.0;\n");
         dot.append("  node [shape=box, style=\"rounded,filled\", fillcolor=\"#e8f4f8\", fontname=\"Arial\"];\n");
         dot.append("  edge [color=\"#666\", penwidth=1.5];\n\n");
 

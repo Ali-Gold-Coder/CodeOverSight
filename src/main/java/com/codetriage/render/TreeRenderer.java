@@ -6,84 +6,47 @@ public class TreeRenderer {
 
     public static String render( TreeNode root){
 
-        StringBuilder html = new StringBuilder();
+        StringBuilder dot = new StringBuilder();
 
-        html.append("<div id=\"tree-container\" style=\"padding: 16px;\">\n");
-        html.append("<h4 style=\"margin-top: 0;\">📁 Code Structure Tree</h4>\n");
-        html.append("<div id=\"tree-view\" style=\"font-family: 'Monaco', monospace; font-size: 13px;\">\n");
+        dot.append("digraph CodeStructure {\n");
+        dot.append("  rankdir=TB;\n");
+        dot.append("  splines=ortho;\n");
+        dot.append("  nodesep=1;\n");
+        dot.append("  ranksep=2;\n");
+        dot.append("  node [shape=box, style=\"rounded,filled\", fontname=\"Arial\", fontsize=10];\n");
+        dot.append("  edge [color=\"#666\", penwidth=1];\n\n");
 
-        renderNode(root, 0, html);
-
-        html.append("</div>\n");
-        html.append("</div>\n");
-        html.append(getTreeCSS());
-        html.append(getTreeJS());
+        // Recursively render nodes
+        renderNode(root, dot);
 
 
-        return html.toString();
+        dot.append("}\n");
+        return dot.toString();
 
     }
 
-    private static void renderNode ( TreeNode node, int depth, StringBuilder html){
+    private static void renderNode ( TreeNode node, StringBuilder dot){
 
-        if(node.type.equals("FOLDER") && node.name.equals("root")){
-
-            //skip the root and render children directly
-
-            for(TreeNode child : node.children){
-                renderNode(child, depth, html);
-            }
-
-            return;
-        }
-
-
-        String indent = getIndent(depth);
-        String icon = getIcon(node.type);
+        String nodeId = sanitizeId(node.name);
+        String label = node.name;
         String color = getColor(node.type);
-        String className = getNodeClass(node.type);
+        String icon = getIcon(node.type);
 
-        html.append(String.format("%s<div class='tree-node %s' style='color: %s; margin-left: %dpx;'>\n", indent, className, color, depth * 16));
+        // Create node
+        dot.append(String.format("  \"%s\" [label=\"%s %s\", fillcolor=\"%s\"];\n", nodeId, icon, label, color));
 
-        if(node.children.isEmpty()){
-            html.append(String.format("%s  <span class='tree-icon'>%s</span> %s\n", indent, icon, escapeHtml(node.name)));
-
-            if(!node.modifier.isEmpty() && !node.type.equals("IMPORT")){
-                html.append(String.format(" <span class='modifier-badge'>%s</span>", node.modifier));
-
-            }
-
-            if(node.signature != null && !node.signature.isEmpty()){
-
-                html.append(String.format(" <span class='method-signature'>%s</span>", escapeHtml(node.signature)));
-
-            }
-
-            html.append("\n");
-
-        } else{ 
-
-            // Has children, make it collapsible
-            html.append(String.format("%s  <details class='tree-details'>\n", indent));
-            html.append(String.format("%s    <summary class='tree-summary'>\n", indent));
-            html.append(String.format("%s      <span class='tree-icon'>%s</span> %s\n", indent, icon, escapeHtml(node.name)));
-
-            if(!node.modifier.isEmpty()){
-                html.append(String.format(" <span class='modifier-badge'>%s</span>", node.modifier));
-            }
-            html.append(String.format("%s    </summary>\n", indent));
-
-            for(TreeNode child : node.children){
-                renderNode(child, depth + 1, html);
-            }
-
-            html.append(String.format("%s  </details>\n", indent));
-
+        // Recursively render children and create edges
+        for (TreeNode child : node.children) {
+            String childId = sanitizeId(child.name);
+            dot.append(String.format("  \"%s\" -> \"%s\";\n", nodeId, childId));
+            renderNode(child, dot);
         }
-
-        html.append(String.format("%s</div>\n", indent));
     }
 
+    private static String sanitizeId(String name) {
+        return name.replaceAll("[^a-zA-Z0-9_]", "_");
+    }
+    
     private static String getIcon(String type){
 
         switch(type) {

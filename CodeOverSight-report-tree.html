@@ -4,301 +4,100 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CodeTriage Report - File Structure</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/d3-graphviz@5.0.2/build/d3-graphviz.min.js"></script>
     <style>
         * { box-sizing: border-box; }
         body { 
             margin: 0; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background: #fafafa; 
-            padding: 20px;
         }
         
-        #tree-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        h1 {
-            margin: 0 0 24px 0;
-            font-size: 24px;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        #tree-view {
-            font-family: 'Monaco', 'Courier New', monospace;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-        
-        .tree-node { 
-            margin: 4px 0; 
-            padding: 6px; 
-            border-radius: 4px; 
-            transition: 0.2s; 
-        }
-        .tree-node:hover { 
-            background: #f5f5f5; 
-            padding-left: 12px; 
-        }
-        .tree-icon { 
-            margin-right: 8px; 
-            display: inline-block; 
-            width: 16px; 
-        }
-        .tree-details { 
-            cursor: pointer; 
-            user-select: none; 
-        }
-        .tree-details[open] > .tree-summary .tree-icon::before { 
-            content: '▼ '; 
-        }
-        .tree-details:not([open]) > .tree-summary .tree-icon::before { 
-            content: '▶ '; 
-        }
-        .tree-summary { 
-            list-style: none; 
-            cursor: pointer; 
-            padding: 4px 0; 
-            font-weight: 500; 
-        }
-        .tree-summary::-webkit-details-marker { 
-            display: none; 
-        }
-        .modifier-badge { 
-            display: inline-block; 
-            padding: 2px 6px; 
-            background: #f0f0f0; 
-            border-radius: 3px; 
-            font-size: 11px; 
-            font-weight: 600; 
-            color: #666; 
-            margin-left: 6px; 
-        }
-        .method-signature { 
-            display: inline-block; 
-            padding: 2px 6px; 
-            background: #e3f2fd; 
-            border-radius: 3px; 
-            font-size: 11px; 
-            color: #1565c0; 
-            margin-left: 6px; 
-        }
-        .tree-folder { 
-            font-weight: 600; 
-            color: #2196F3; 
-        }
-        .tree-file { 
-            font-weight: 500; 
-            color: #4CAF50; 
-        }
-        .tree-class { 
-            font-weight: 600; 
-            color: #FF9800; 
-        }
-        .tree-method { 
-            font-style: italic; 
-            color: #666; 
-        }
-        .tree-import { 
-            color: #999; 
-            font-size: 12px; 
+        #graph { 
+            width: 100%; 
+            height: 100vh; 
+            background: white; 
         }
     </style>
 </head>
 <body>
-<div id="tree-container">
-    <h1>📁 Code Structure Tree</h1>
-    <div id="tree-view"><div id="tree-container" style="padding: 16px;">
-<h4 style="margin-top: 0;">📁 Code Structure Tree</h4>
-<div id="tree-view" style="font-family: 'Monaco', monospace; font-size: 13px;">
-<div class='tree-node tree-folder' style='color: #2196F3; margin-left: 0px;'>
-  <details class='tree-details'>
-    <summary class='tree-summary'>
-      <span class='tree-icon'>📁</span> src
-    </summary>
-<div class='tree-node tree-folder' style='color: #2196F3; margin-left: 16px;'>
-  <details class='tree-details'>
-    <summary class='tree-summary'>
-      <span class='tree-icon'>📁</span> main
-    </summary>
-<div class='tree-node tree-folder' style='color: #2196F3; margin-left: 32px;'>
-  <details class='tree-details'>
-    <summary class='tree-summary'>
-      <span class='tree-icon'>📁</span> java
-    </summary>
-<div class='tree-node tree-folder' style='color: #2196F3; margin-left: 48px;'>
-  <details class='tree-details'>
-    <summary class='tree-summary'>
-      <span class='tree-icon'>📁</span> com
-    </summary>
-<div class='tree-node tree-folder' style='color: #2196F3; margin-left: 64px;'>
-  <details class='tree-details'>
-    <summary class='tree-summary'>
-      <span class='tree-icon'>📁</span> codetriage
-    </summary>
-<div class='tree-node tree-folder' style='color: #2196F3; margin-left: 80px;'>
-  <details class='tree-details'>
-    <summary class='tree-summary'>
-      <span class='tree-icon'>📁</span> cli
-    </summary>
-<div class='tree-node tree-file' style='color: #4CAF50; margin-left: 96px;'>
-  <span class='tree-icon'>📄</span> ArgsParser.java
-
-</div>
-<div class='tree-node tree-file' style='color: #4CAF50; margin-left: 96px;'>
-  <span class='tree-icon'>📄</span> Config.java
-
-</div>
-  </details>
-</div>
-<div class='tree-node tree-folder' style='color: #2196F3; margin-left: 80px;'>
-  <details class='tree-details'>
-    <summary class='tree-summary'>
-      <span class='tree-icon'>📁</span> CodeOverSight
-    </summary>
-<div class='tree-node tree-file' style='color: #4CAF50; margin-left: 96px;'>
-  <span class='tree-icon'>📄</span> CodeOverSight.java
-
-</div>
-  </details>
-</div>
-<div class='tree-node tree-file' style='color: #4CAF50; margin-left: 80px;'>
-  <span class='tree-icon'>📄</span> CodeTriage.java
-
-</div>
-<div class='tree-node tree-folder' style='color: #2196F3; margin-left: 80px;'>
-  <details class='tree-details'>
-    <summary class='tree-summary'>
-      <span class='tree-icon'>📁</span> graph
-    </summary>
-<div class='tree-node tree-file' style='color: #4CAF50; margin-left: 96px;'>
-  <span class='tree-icon'>📄</span> DotGenerator.java
-
-</div>
-  </details>
-</div>
-<div class='tree-node tree-folder' style='color: #2196F3; margin-left: 80px;'>
-  <details class='tree-details'>
-    <summary class='tree-summary'>
-      <span class='tree-icon'>📁</span> model
-    </summary>
-<div class='tree-node tree-file' style='color: #4CAF50; margin-left: 96px;'>
-  <span class='tree-icon'>📄</span> ClassInfo.java
-
-</div>
-<div class='tree-node tree-file' style='color: #4CAF50; margin-left: 96px;'>
-  <span class='tree-icon'>📄</span> FileInfo.java
-
-</div>
-<div class='tree-node tree-file' style='color: #4CAF50; margin-left: 96px;'>
-  <span class='tree-icon'>📄</span> MethodSig.java
-
-</div>
-<div class='tree-node tree-file' style='color: #4CAF50; margin-left: 96px;'>
-  <span class='tree-icon'>📄</span> TreeNode.java
-
-</div>
-  </details>
-</div>
-<div class='tree-node tree-folder' style='color: #2196F3; margin-left: 80px;'>
-  <details class='tree-details'>
-    <summary class='tree-summary'>
-      <span class='tree-icon'>📁</span> parser
-    </summary>
-<div class='tree-node tree-file' style='color: #4CAF50; margin-left: 96px;'>
-  <span class='tree-icon'>📄</span> FileParser.java
-
-</div>
-  </details>
-</div>
-<div class='tree-node tree-folder' style='color: #2196F3; margin-left: 80px;'>
-  <details class='tree-details'>
-    <summary class='tree-summary'>
-      <span class='tree-icon'>📁</span> render
-    </summary>
-<div class='tree-node tree-file' style='color: #4CAF50; margin-left: 96px;'>
-  <span class='tree-icon'>📄</span> HtmlRenderer.java
-
-</div>
-<div class='tree-node tree-file' style='color: #4CAF50; margin-left: 96px;'>
-  <span class='tree-icon'>📄</span> TreeRenderer.java
-
-</div>
-  </details>
-</div>
-<div class='tree-node tree-folder' style='color: #2196F3; margin-left: 80px;'>
-  <details class='tree-details'>
-    <summary class='tree-summary'>
-      <span class='tree-icon'>📁</span> util
-    </summary>
-<div class='tree-node tree-file' style='color: #4CAF50; margin-left: 96px;'>
-  <span class='tree-icon'>📄</span> FileLister.java
-
-</div>
-<div class='tree-node tree-file' style='color: #4CAF50; margin-left: 96px;'>
-  <span class='tree-icon'>📄</span> TreeBuilder.java
-
-</div>
-  </details>
-</div>
-  </details>
-</div>
-  </details>
-</div>
-<div class='tree-node tree-folder' style='color: #2196F3; margin-left: 48px;'>
-  <details class='tree-details'>
-    <summary class='tree-summary'>
-      <span class='tree-icon'>📁</span> org
-    </summary>
-<div class='tree-node tree-folder' style='color: #2196F3; margin-left: 64px;'>
-  <details class='tree-details'>
-    <summary class='tree-summary'>
-      <span class='tree-icon'>📁</span> example
-    </summary>
-<div class='tree-node tree-file' style='color: #4CAF50; margin-left: 80px;'>
-  <span class='tree-icon'>📄</span> App.java
-
-</div>
-  </details>
-</div>
-  </details>
-</div>
-  </details>
-</div>
-  </details>
-</div>
-  </details>
-</div>
-</div>
-</div>
-<style>
-#tree-container { background: white; border-top: 2px solid #ddd; margin-top: 20px; }
-.tree-node { margin: 4px 0; padding: 4px; border-radius: 4px; transition: 0.2s; }
-.tree-node:hover { background: #f5f5f5; padding-left: 8px; }
-.tree-icon { margin-right: 6px; display: inline-block; width: 16px; }
-.tree-details { cursor: pointer; user-select: none; }
-.tree-details[open] > .tree-summary .tree-icon::before { content: '▼ '; }
-.tree-details:not([open]) > .tree-summary .tree-icon::before { content: '▶ '; }
-.tree-summary { list-style: none; cursor: pointer; padding: 4px 0; font-weight: 500; }
-.tree-summary::-webkit-details-marker { display: none; }
-.modifier-badge { display: inline-block; padding: 2px 6px; background: #f3f3f3; border-radius: 3px; font-size: 11px; font-weight: 600; color: #666; margin-left: 6px; }
-.method-signature { display: inline-block; padding: 2px 6px; background: #e3f2fd; border-radius: 3px; font-size: 11px; color: #1565c0; margin-left: 6px; }
-.tree-folder { font-weight: 600; }
-.tree-file { font-weight: 500; }
-.tree-class { font-weight: 600; }
-.tree-method { font-style: italic; }
-.tree-import { color: #999; font-size: 12px; }
-</style>
+<div id="graph"></div>
 <script>
-// Tree interactivity handled by native <details> elements
-// No additional JS needed for basic functionality
+    const treeDot = `digraph CodeStructure {
+  rankdir=TB;
+  splines=ortho;
+  nodesep=1;
+  ranksep=2;
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=10];
+  edge [color="#666", penwidth=1];
+
+  "root" [label="📁 root", fillcolor="#2196F3"];
+  "root" -> "src";
+  "src" [label="📁 src", fillcolor="#2196F3"];
+  "src" -> "main";
+  "main" [label="📁 main", fillcolor="#2196F3"];
+  "main" -> "java";
+  "java" [label="📁 java", fillcolor="#2196F3"];
+  "java" -> "com";
+  "com" [label="📁 com", fillcolor="#2196F3"];
+  "com" -> "codetriage";
+  "codetriage" [label="📁 codetriage", fillcolor="#2196F3"];
+  "codetriage" -> "cli";
+  "cli" [label="📁 cli", fillcolor="#2196F3"];
+  "cli" -> "ArgsParser_java";
+  "ArgsParser_java" [label="📄 ArgsParser.java", fillcolor="#4CAF50"];
+  "cli" -> "Config_java";
+  "Config_java" [label="📄 Config.java", fillcolor="#4CAF50"];
+  "codetriage" -> "CodeOverSight";
+  "CodeOverSight" [label="📁 CodeOverSight", fillcolor="#2196F3"];
+  "CodeOverSight" -> "CodeOverSight_java";
+  "CodeOverSight_java" [label="📄 CodeOverSight.java", fillcolor="#4CAF50"];
+  "codetriage" -> "CodeTriage_java";
+  "CodeTriage_java" [label="📄 CodeTriage.java", fillcolor="#4CAF50"];
+  "codetriage" -> "graph";
+  "graph" [label="📁 graph", fillcolor="#2196F3"];
+  "graph" -> "DotGenerator_java";
+  "DotGenerator_java" [label="📄 DotGenerator.java", fillcolor="#4CAF50"];
+  "codetriage" -> "model";
+  "model" [label="📁 model", fillcolor="#2196F3"];
+  "model" -> "ClassInfo_java";
+  "ClassInfo_java" [label="📄 ClassInfo.java", fillcolor="#4CAF50"];
+  "model" -> "FileInfo_java";
+  "FileInfo_java" [label="📄 FileInfo.java", fillcolor="#4CAF50"];
+  "model" -> "MethodSig_java";
+  "MethodSig_java" [label="📄 MethodSig.java", fillcolor="#4CAF50"];
+  "model" -> "TreeNode_java";
+  "TreeNode_java" [label="📄 TreeNode.java", fillcolor="#4CAF50"];
+  "codetriage" -> "parser";
+  "parser" [label="📁 parser", fillcolor="#2196F3"];
+  "parser" -> "FileParser_java";
+  "FileParser_java" [label="📄 FileParser.java", fillcolor="#4CAF50"];
+  "codetriage" -> "render";
+  "render" [label="📁 render", fillcolor="#2196F3"];
+  "render" -> "HtmlRenderer_java";
+  "HtmlRenderer_java" [label="📄 HtmlRenderer.java", fillcolor="#4CAF50"];
+  "render" -> "TreeRenderer_java";
+  "TreeRenderer_java" [label="📄 TreeRenderer.java", fillcolor="#4CAF50"];
+  "codetriage" -> "util";
+  "util" [label="📁 util", fillcolor="#2196F3"];
+  "util" -> "FileLister_java";
+  "FileLister_java" [label="📄 FileLister.java", fillcolor="#4CAF50"];
+  "util" -> "TreeBuilder_java";
+  "TreeBuilder_java" [label="📄 TreeBuilder.java", fillcolor="#4CAF50"];
+  "java" -> "org";
+  "org" [label="📁 org", fillcolor="#2196F3"];
+  "org" -> "example";
+  "example" [label="📁 example", fillcolor="#2196F3"];
+  "example" -> "App_java";
+  "App_java" [label="📄 App.java", fillcolor="#4CAF50"];
+}
+`;
+    
+    d3.select("#graph").graphviz()
+        .fit(true)
+        .zoom(true)
+        .renderDot(treeDot);
 </script>
-</div>
-</div>
 </body>
 </html>

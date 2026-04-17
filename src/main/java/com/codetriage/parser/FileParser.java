@@ -3,6 +3,7 @@ package com.codetriage.parser;
 import com.codetriage.cli.Config;
 import com.codetriage.model.FileInfo;
 import com.codetriage.model.MethodSig;
+import com.codetriage.model.ClassInfo;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseResult;
@@ -13,6 +14,7 @@ import com.github.javaparser.ast.expr.SimpleName;
 
 import java.io.File;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -44,21 +46,31 @@ public class FileParser {
             }
 
             CompilationUnit cu = result.getResult().get();
-            Optional<ClassOrInterfaceDeclaration> classDecl = cu.findFirst(ClassOrInterfaceDeclaration.class);
-
-            if(classDecl.isEmpty()){
-                return Optional.empty();
-            }
-
-            ClassOrInterfaceDeclaration clazz = classDecl.get();
-            String className = clazz.getNameAsString();
             String packageName = cu.getPackageDeclaration().map(p -> p.getNameAsString()).orElse("");
 
-            List<MethodSig> methods = clazz.getMethods().stream().map(FileParser::toMethodSig).collect(Collectors.toList());
+            List<ClassOrInterfaceDeclaration> classes = cu.findAll(ClassOrInterfaceDeclaration.class);
+
+            if(classes.isEmpty()){
+                return Optional.empty();
+            }
+            List<ClassInfo> classInfoList = new ArrayList<>();
+
+            for(ClassOrInterfaceDeclaration clazz : classes){ 
+                String className = clazz.getNameAsString();
+                String modifier = getModifier(clazz.getModifiers());
+                List<MethodSig> methods = clazz.getMethods().stream().map(FileParser::toMethodSig).collect(Collectors.toList());
+
+                classInfoList.add(new ClassInfo(className, modifier, methods));
+
+
+            }
 
             List<String> imports = cu.getImports().stream().map(imp -> imp.getNameAsString()).collect(Collectors.toList());
 
-            return Optional.of(new FileInfo(file.getPath(), className, packageName, methods, imports));
+            // use first class name for compatibility with dot generator 
+            String firstClassName = classInfoList.get(0).className;
+
+            return Optional.of(new FileInfo(file.getPath(), firstClassName, packageName, classInfoList.get(0).methods, imports, classInfoList));
 
 
         } catch (Exception e) {
@@ -72,9 +84,27 @@ public class FileParser {
 
         String returnType = method.getType().toString();
 
-        return new MethodSig(method.getNameAsString(), params, returnType);
+        String modifier = getModifier(method.getModifiers());
+
+        return new MethodSig(method.getNameAsString(), params, returnType, modifier);
 
 
     }
+
+
+    private static String getModifier(com.github.javaparser.ast.NodeList<com.github.javaparser.ast.Modifier> modifiers){
+        if(modifiers.contains(com.github.javaparser.ast.Modifier.publicModifier())){
+            return "public";
+        } else if(modifiers.contains(com.github.javaparser.ast.Modifier.protectedModifier())){
+            return "protected";
+        } else if(modifiers.contains(com.github.javaparser.ast.Modifier.privateModifier())){
+            return "private";
+        } else {
+            return "package-private";
+        }
+
+    }
+
+
 }
 

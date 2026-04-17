@@ -50,9 +50,12 @@ public class CodeTriage {
             // Generate DOT graph
             String dot = DotGenerator.generate(fileInfos, config);
 
+            // Get root path from the first config folder
+            String rootPath = config.folders.isEmpty() ? "." : config.folders.get(0);
+
             //Render HTML report
-            String html = HtmlRenderer.render(dot, fileInfos);
-            Files.write(Paths.get(config.output), html.getBytes());
+            HtmlRenderer.render(dot, fileInfos, files, rootPath, config.output);
+        
 
             // auto open browser
 

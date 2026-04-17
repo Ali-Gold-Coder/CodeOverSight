@@ -1,4 +1,5 @@
 package com.codetriage.graph;
+import com.codetriage.model.ClassInfo;
 
 import com.codetriage.cli.Config;
 import com.codetriage.model.FileInfo;
@@ -72,14 +73,22 @@ public class DotGenerator {
 
     private static String buildNodeLabel(FileInfo file){
         StringBuilder label = new StringBuilder();
-        label.append("Class: ").append(file.className).append("|");
 
-        if(file.methods.isEmpty()){
+        for( ClassInfo classInfo : file.classes){
+
+            label.append("Class: ").append(classInfo.className).append("|");
+
+            if(classInfo.methods.isEmpty()){
+
             label.append("(no methods)");
-        } else {
-            for(MethodSig method : file.methods){
+
+            } else {
+
+            for(MethodSig method : classInfo.methods){
                 label.append("\\nMethod: ").append(method.signature());
             }
+        }
+
         }
 
         return label.toString().replace("\"", "\\\"");

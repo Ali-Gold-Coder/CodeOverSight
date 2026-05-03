@@ -90,13 +90,13 @@ public class TreeBuilder{
                     } // error maybe , dont have a var named methods 
 
 
-                    // add imports
-                    if(!fileInfo.imports.isEmpty()){
-                        for(String importStmt : fileInfo.imports){
-                            TreeNode importNode = new TreeNode(importStmt, "IMPORT");
-                            classNode.addChild(importNode);
-                        } // same issue here imports isnt a var
-                    }
+                    // // add imports
+                    // if(!fileInfo.imports.isEmpty()){
+                    //     for(String importStmt : fileInfo.imports){
+                    //         TreeNode importNode = new TreeNode(importStmt, "IMPORT");
+                    //         classNode.addChild(importNode);
+                    //     } // same issue here imports isnt a var
+                    // }
                 }
 
 

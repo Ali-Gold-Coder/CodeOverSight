@@ -8,6 +8,10 @@ import com.codetriage.parser.FileParser;
 import com.codetriage.render.HtmlRenderer;
 import com.codetriage.util.FileLister;
 
+import com.codetriage.util.BeeTreeBuilder;
+import com.codetriage.model.TreeNode;
+import com.codetriage.render.BeeTreeRenderer;
+
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
@@ -52,6 +56,11 @@ public class CodeTriage {
 
             // Get root path from the first config folder
             String rootPath = config.folders.isEmpty() ? "." : config.folders.get(0);
+
+            // Generate Bee Tree report
+            TreeNode beeTree = BeeTreeBuilder.buildTree(files, fileInfos, rootPath);
+            String beeTreeHtml = BeeTreeRenderer.render(beeTree);
+            Files.write(Paths.get("report-beeTree.html"), beeTreeHtml.getBytes());
 
             //Render HTML report
             HtmlRenderer.render(dot, fileInfos, files, rootPath, config.output);

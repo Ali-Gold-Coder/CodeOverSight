@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeTriage Report - File Structure</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/d3-graphviz@5.0.2/build/d3-graphviz.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: #fafafa; 
+        }
+        
+        #graph { 
+            width: 100%; 
+            height: 100vh; 
+            background: white; 
+        }
+    </style>
+</head>
+<body>
+<div id="graph"></div>
+<script>
+    const treeDot = `digraph CodeStructure {
+  rankdir=TB;
+  splines=ortho;
+  nodesep=1;
+  ranksep=2;
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=10];
+  edge [color="#666", penwidth=1];
+
+  "root" [label="📁 root", fillcolor="#2196F3"];
+  "root" -> "cli";
+  "cli" [label="📁 cli", fillcolor="#2196F3"];
+  "cli" -> "ArgsParser_java";
+  "ArgsParser_java" [label="📄 ArgsParser.java", fillcolor="#4CAF50"];
+  "ArgsParser_java" -> "ArgsParser";
+  "ArgsParser" [label="🏛️ ArgsParser", fillcolor="#FF9800"];
+  "ArgsParser" -> "parse";
+  "parse" [label="⚙️ parse", fillcolor="#9C27B0"];
+  "cli" -> "Config_java";
+  "Config_java" [label="📄 Config.java", fillcolor="#4CAF50"];
+  "Config_java" -> "Config";
+  "Config" [label="🏛️ Config", fillcolor="#FF9800"];
+  "root" -> "CodeOverSight";
+  "CodeOverSight" [label="📁 CodeOverSight", fillcolor="#2196F3"];
+  "CodeOverSight" -> "CodeOverSight_java";
+  "CodeOverSight_java" [label="📄 CodeOverSight.java", fillcolor="#4CAF50"];
+  "CodeOverSight_java" -> "CodeOverSight";
+  "CodeOverSight" [label="🏛️ CodeOverSight", fillcolor="#FF9800"];
+  "CodeOverSight" -> "main";
+  "main" [label="⚙️ main", fillcolor="#9C27B0"];
+  "root" -> "CodeTriage_java";
+  "CodeTriage_java" [label="📄 CodeTriage.java", fillcolor="#4CAF50"];
+  "CodeTriage_java" -> "CodeTriage";
+  "CodeTriage" [label="🏛️ CodeTriage", fillcolor="#FF9800"];
+  "CodeTriage" -> "main";
+  "main" [label="⚙️ main", fillcolor="#9C27B0"];
+  "root" -> "graph";
+  "graph" [label="📁 graph", fillcolor="#2196F3"];
+  "graph" -> "DotGenerator_java";
+  "DotGenerator_java" [label="📄 DotGenerator.java", fillcolor="#4CAF50"];
+  "DotGenerator_java" -> "DotGenerator";
+  "DotGenerator" [label="🏛️ DotGenerator", fillcolor="#FF9800"];
+  "DotGenerator" -> "generate";
+  "generate" [label="⚙️ generate", fillcolor="#9C27B0"];
+  "DotGenerator" -> "getNodeId";
+  "getNodeId" [label="⚙️ getNodeId", fillcolor="#9C27B0"];
+  "DotGenerator" -> "buildNodeLabel";
+  "buildNodeLabel" [label="⚙️ buildNodeLabel", fillcolor="#9C27B0"];
+  "DotGenerator" -> "resolveImport";
+  "resolveImport" [label="⚙️ resolveImport", fillcolor="#9C27B0"];
+  "root" -> "model";
+  "model" [label="📁 model", fillcolor="#2196F3"];
+  "model" -> "FileInfo_java";
+  "FileInfo_java" [label="📄 FileInfo.java", fillcolor="#4CAF50"];
+  "FileInfo_java" -> "FileInfo";
+  "FileInfo" [label="🏛️ FileInfo", fillcolor="#FF9800"];
+  "model" -> "MethodSig_java";
+  "MethodSig_java" [label="📄 MethodSig.java", fillcolor="#4CAF50"];
+  "MethodSig_java" -> "MethodSig";
+  "MethodSig" [label="🏛️ MethodSig", fillcolor="#FF9800"];
+  "MethodSig" -> "signature";
+  "signature" [label="⚙️ signature", fillcolor="#9C27B0"];
+  "root" -> "parser";
+  "parser" [label="📁 parser", fillcolor="#2196F3"];
+  "parser" -> "FileParser_java";
+  "FileParser_java" [label="📄 FileParser.java", fillcolor="#4CAF50"];
+  "FileParser_java" -> "FileParser";
+  "FileParser" [label="🏛️ FileParser", fillcolor="#FF9800"];
+  "FileParser" -> "parse";
+  "parse" [label="⚙️ parse", fillcolor="#9C27B0"];
+  "FileParser" -> "parseInternal";
+  "parseInternal" [label="⚙️ parseInternal", fillcolor="#9C27B0"];
+  "FileParser" -> "toMethodSig";
+  "toMethodSig" [label="⚙️ toMethodSig", fillcolor="#9C27B0"];
+  "root" -> "render";
+  "render" [label="📁 render", fillcolor="#2196F3"];
+  "render" -> "HtmlRenderer_java";
+  "HtmlRenderer_java" [label="📄 HtmlRenderer.java", fillcolor="#4CAF50"];
+  "HtmlRenderer_java" -> "HtmlRenderer";
+  "HtmlRenderer" [label="🏛️ HtmlRenderer", fillcolor="#FF9800"];
+  "HtmlRenderer" -> "render";
+  "render" [label="⚙️ render", fillcolor="#9C27B0"];
+  "root" -> "util";
+  "util" [label="📁 util", fillcolor="#2196F3"];
+  "util" -> "FileLister_java";
+  "FileLister_java" [label="📄 FileLister.java", fillcolor="#4CAF50"];
+  "FileLister_java" -> "FileLister";
+  "FileLister" [label="🏛️ FileLister", fillcolor="#FF9800"];
+  "FileLister" -> "listFiles";
+  "listFiles" [label="⚙️ listFiles", fillcolor="#9C27B0"];
+}
+`;
+    
+    d3.select("#graph").graphviz()
+        .fit(true)
+        .zoom(true)
+        .renderDot(treeDot);
+</script>
+</body>
+</html>

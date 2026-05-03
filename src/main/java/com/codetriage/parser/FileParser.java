@@ -60,7 +60,7 @@ public class FileParser {
                 String modifier = getModifier(clazz.getModifiers());
                 List<MethodSig> methods = clazz.getMethods().stream().map(FileParser::toMethodSig).collect(Collectors.toList());
 
-                classInfoList.add(new ClassInfo(className, modifier, methods));
+                classInfoList.add(new ClassInfo(className, modifier, methods, new ArrayList<>(), new ArrayList<>(), new ArrayList<>()));
 
 
             }
@@ -86,7 +86,7 @@ public class FileParser {
 
         String modifier = getModifier(method.getModifiers());
 
-        return new MethodSig(method.getNameAsString(), params, returnType, modifier);
+        return new MethodSig(method.getNameAsString(), params, returnType, modifier, new ArrayList<>());
 
 
     }

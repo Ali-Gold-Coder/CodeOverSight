@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bee Tree Report</title>
+<style>
+#tree-container { background: white; border-top: 2px solid #ddd; margin-top: 20px; }
+.tree-node { margin: 4px 0; padding: 4px; border-radius: 4px; transition: 0.2s; }
+.tree-node:hover { background: #f5f5f5; padding-left: 8px; }
+.tree-icon { margin-right: 6px; display: inline-block; width: 16px; }
+.tree-details { cursor: pointer; user-select: none; }
+.tree-details[open] > .tree-summary .tree-icon::before { content: '▼ '; }
+.tree-details:not([open]) > .tree-summary .tree-icon::before { content: '▶ '; }
+.tree-summary { list-style: none; cursor: pointer; padding: 4px 0; font-weight: 500; }
+.tree-summary::-webkit-details-marker { display: none; }
+.modifier-badge { display: inline-block; padding: 2px 6px; background: #f3f3f3; border-radius: 3px; font-size: 11px; font-weight: 600; color: #666; margin-left: 6px; }
+.method-signature { display: inline-block; padding: 2px 6px; background: #e3f2fd; border-radius: 3px; font-size: 11px; color: #1565c0; margin-left: 6px; }
+.tree-folder { font-weight: 600; }
+.tree-file { font-weight: 500; }
+.tree-class { font-weight: 600; }
+.tree-method { font-style: italic; }
+.tree-import { color: #999; font-size: 12px; }
+</style>
+</head>
+<body>
+<div id='tree-container'>
+<h1>Code Structure - Bee Tree</h1>
+<details class='tree-node tree-folder'>
+  <summary class='tree-summary'>📁 root</summary>
+<details class='tree-node tree-folder'>
+  <summary class='tree-summary'>📁 cli</summary>
+<details class='tree-node tree-file'>
+  <summary class='tree-summary'>📄 ArgsParser.java</summary>
+  <div class='file-description'>
+    <pre>Classes:
+  public ArgsParser
+    Constructors:
+    Methods / Functions:
+      public Config parse | (String[])</pre>
+  </div>
+</details>
+<details class='tree-node tree-file'>
+  <summary class='tree-summary'>📄 Config.java</summary>
+  <div class='file-description'>
+    <pre>Classes:
+  public Config</pre>
+  </div>
+</details>
+</details>
+<details class='tree-node tree-folder'>
+  <summary class='tree-summary'>📁 CodeOverSight</summary>
+<details class='tree-node tree-file'>
+  <summary class='tree-summary'>📄 CodeOverSight.java</summary>
+  <div class='file-description'>
+    <pre>Classes:
+  public CodeOverSight
+    Constructors:
+    Methods / Functions:
+      public void main | (String[])</pre>
+  </div>
+</details>
+</details>
+<details class='tree-node tree-file'>
+  <summary class='tree-summary'>📄 CodeTriage.java</summary>
+  <div class='file-description'>
+    <pre>Classes:
+  public CodeTriage
+    Constructors:
+    Methods / Functions:
+      public void main | (String[])</pre>
+  </div>
+</details>
+<details class='tree-node tree-folder'>
+  <summary class='tree-summary'>📁 graph</summary>
+<details class='tree-node tree-file'>
+  <summary class='tree-summary'>📄 DotGenerator.java</summary>
+  <div class='file-description'>
+    <pre>Classes:
+  public DotGenerator
+    Constructors:
+    Methods / Functions:
+      public String generate | (List&lt;FileInfo&gt;, Config)
+      private String getNodeId | (FileInfo)
+      private String buildNodeLabel | (FileInfo)
+      private String resolveImport | (String, Set&lt;String&gt;, List&lt;FileInfo&gt;)</pre>
+  </div>
+</details>
+</details>
+<details class='tree-node tree-folder'>
+  <summary class='tree-summary'>📁 model</summary>
+<details class='tree-node tree-file'>
+  <summary class='tree-summary'>📄 FileInfo.java</summary>
+  <div class='file-description'>
+    <pre>Classes:
+  public FileInfo</pre>
+  </div>
+</details>
+<details class='tree-node tree-file'>
+  <summary class='tree-summary'>📄 MethodSig.java</summary>
+  <div class='file-description'>
+    <pre>Classes:
+  public MethodSig
+    Constructors:
+    Methods / Functions:
+      public String signature | ()</pre>
+  </div>
+</details>
+</details>
+<details class='tree-node tree-folder'>
+  <summary class='tree-summary'>📁 parser</summary>
+<details class='tree-node tree-file'>
+  <summary class='tree-summary'>📄 FileParser.java</summary>
+  <div class='file-description'>
+    <pre>Classes:
+  public FileParser
+    Constructors:
+    Methods / Functions:
+      public Optional&lt;FileInfo&gt; parse | (File, Config)
+      private Optional&lt;FileInfo&gt; parseInternal | (File)
+      private MethodSig toMethodSig | (MethodDeclaration)</pre>
+  </div>
+</details>
+</details>
+<details class='tree-node tree-folder'>
+  <summary class='tree-summary'>📁 render</summary>
+<details class='tree-node tree-file'>
+  <summary class='tree-summary'>📄 HtmlRenderer.java</summary>
+  <div class='file-description'>
+    <pre>Classes:
+  public HtmlRenderer
+    Constructors:
+    Methods / Functions:
+      public String render | (String, List&lt;FileInfo&gt;)</pre>
+  </div>
+</details>
+</details>
+<details class='tree-node tree-folder'>
+  <summary class='tree-summary'>📁 util</summary>
+<details class='tree-node tree-file'>
+  <summary class='tree-summary'>📄 FileLister.java</summary>
+  <div class='file-description'>
+    <pre>Classes:
+  public FileLister
+    Constructors:
+    Methods / Functions:
+      public List&lt;File&gt; listFiles | (Config)</pre>
+  </div>
+</details>
+</details>
+</details>
+</div>
+<script>
+// Tree interactivity handled by native <details> elements
+// No additional JS needed for basic functionality
+</script>
+</body>
+</html>

@@ -8,7 +8,8 @@ public class TreeNode{
     public String type; // Folder, file, class , method , import
     public String modifier; // public , protected, etc
     public String fullPath; // Folders/files
-    public String signature; // For methods 
+    public String signature; // For methods
+    public String description; // For file descriptions
     public List<TreeNode> children;
 
     public TreeNode(String name, String type){
@@ -35,5 +36,9 @@ public class TreeNode{
 
     public void setSignature(String sig){
         this.signature = sig;
+    }
+
+    public void setDescription(String desc){
+        this.description = desc;
     }
 }

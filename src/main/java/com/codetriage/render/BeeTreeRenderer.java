@@ -2,56 +2,69 @@ package com.codetriage.render;
 
 import com.codetriage.model.TreeNode;
 
-public class TreeRenderer {
+public class BeeTreeRenderer {
 
     public static String render( TreeNode root){
 
-        StringBuilder dot = new StringBuilder();
+        StringBuilder html = new StringBuilder();
 
-        dot.append("digraph CodeStructure {\n");
-        dot.append("  rankdir=TB;\n");
-        dot.append("  splines=ortho;\n");
-        dot.append("  nodesep=1;\n");
-        dot.append("  ranksep=2;\n");
-        dot.append("  node [shape=box, style=\"rounded,filled\", fontname=\"Arial\", fontsize=10];\n");
-        dot.append("  edge [color=\"#666\", penwidth=1];\n\n");
+        html.append("<!DOCTYPE html>\n");
+        html.append("<html>\n");
+        html.append("<head>\n");
+        html.append("  <title>Bee Tree Report</title>\n");
+        html.append(getTreeCSS());
+        html.append("</head>\n");
+        html.append("<body>\n");
+        html.append("<div id='tree-container'>\n");
+        html.append("<h1>Code Structure - Bee Tree</h1>\n");
 
-        // Recursively render nodes
-        renderNode(root, dot);
+        renderNode(root, html, 0);
 
+        html.append("</div>\n");
+        html.append(getTreeJS());
+        html.append("</body>\n");
+        html.append("</html>\n");
 
-        dot.append("}\n");
-        return dot.toString();
+        return html.toString();
 
     }
 
-    private static void renderNode ( TreeNode node, StringBuilder dot){
-
-        // Only render nodes with valid types
+    private static void renderNode(TreeNode node, StringBuilder html, int depth){
         if (!isValidType(node.type)) {
-        return;
+            return;
         }
 
-        String nodeId = sanitizeId(node.name);
-        String label = node.name;
-        String color = getColor(node.type);
+        String indent = getIndent(depth);
         String icon = getIcon(node.type);
 
-        // Create node
-        dot.append(String.format("  \"%s\" [label=\"%s %s\", fillcolor=\"%s\"];\n", nodeId, icon, label, color));
+        if(node.type.equals("FOLDER")){
+            html.append(indent).append("<details class='tree-node tree-folder'>\n");
+            html.append(indent).append("  <summary class='tree-summary'>").append(icon).append(" ").append(escapeHtml(node.name)).append("</summary>\n");
 
-        // Recursively render children and create edges
-        for (TreeNode child : node.children) {
-            if(isValidType(child.type)){
-
-                String childId = sanitizeId(child.name);
-                dot.append(String.format("  \"%s\" -> \"%s\";\n", nodeId, childId));
-                renderNode(child, dot);
+            for (TreeNode child : node.children){
+                if (isValidType(child.type)){
+                    renderNode(child, html, depth + 1);
+                }
             }
+            html.append(indent).append("</details>\n");
+            
+        } 
+        
+        else if (node.type.equals("FILE")){
 
+            html.append(indent).append("<details class='tree-node tree-file'>\n");
+            html.append(indent).append("  <summary class='tree-summary'>").append(icon).append(" ").append(escapeHtml(node.name)).append("</summary>\n");
             
+            // Add file description if it exists
+            if (node.description != null && !node.description.isEmpty()) {
+                html.append(indent).append("  <div class='file-description'>\n");
+                html.append(indent).append("    <pre>").append(escapeHtml(node.description)).append("</pre>\n");
+                html.append(indent).append("  </div>\n");
+            }
             
+            html.append(indent).append("</details>\n");
         }
+        
     }
 
     private static String sanitizeId(String name) {
@@ -59,14 +72,8 @@ public class TreeRenderer {
     }
 
     private static boolean isValidType(String type) {
-    return type != null && (
-        type.equals("FOLDER") ||
-        type.equals("FILE") ||
-        type.equals("CLASS") ||
-        type.equals("METHOD") ||
-        type.equals("IMPORT")
-    );
-}
+        return type != null && ( type.equals("FOLDER") || type.equals("FILE") );
+    }
     
     private static String getIcon(String type){
 
@@ -77,15 +84,6 @@ public class TreeRenderer {
 
             case "FILE":
                 return "📄";
-
-            case "CLASS":
-                return "🏛️";
-
-            case "METHOD":
-                return "⚙️";
-            
-            case "IMPORT":
-                return "📦";
 
             default:
                 return "*";

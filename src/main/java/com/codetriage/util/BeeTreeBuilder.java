@@ -104,13 +104,21 @@ public class BeeTreeBuilder{
 
                 // add constructors and methods for this class
                 if(classInfo.methods != null && !classInfo.methods.isEmpty()) {
-                    desc.append("    Constructors:\n");
-                    for(MethodSig method : classInfo.methods){
-                        if(method.name.equals(classInfo.className)){ // Constructor has same name as class
-                            String params = method.params != null ? method.params : "";
-                            desc.append("      ").append(method.modifier).append(" | (").append(params).append(")\n");
-                        }
+                    // desc.append("    Constructors:\n");
+
+                    Optional<MethodSig> constructor = classInfo.methods.stream().filter(m -> m.name.equals(classInfo.className)).findFirst();
+
+                    if( constructor.isPresent()){
+                        String params = constructor.get().params != null ? constructor.get().params : "";
+                        desc.append("   Constructor parameters: ").append(params).append("\n");
                     }
+                    
+                    // for(MethodSig method : classInfo.methods){
+                    //     if(method.name.equals(classInfo.className)){ // Constructor has same name as class
+                    //         String params = method.params != null ? method.params : "";
+                    //         desc.append("      ").append(method.modifier).append(" | (").append(params).append(")\n");
+                    //     }
+                    // }
 
                     desc.append("    Methods / Functions:\n");
                     for(MethodSig method : classInfo.methods){

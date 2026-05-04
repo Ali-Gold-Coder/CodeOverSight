@@ -4,67 +4,99 @@ import com.codetriage.model.TreeNode;
 
 public class BeeTreeRenderer {
 
-    public static String render( TreeNode root){
-
+    public static String render(TreeNode root){
+        String dot = renderDot(root);
+        
+        // Wrap DOT in HTML with d3-graphviz rendering
         StringBuilder html = new StringBuilder();
-
         html.append("<!DOCTYPE html>\n");
-        html.append("<html>\n");
+        html.append("<html lang=\"en\">\n");
         html.append("<head>\n");
-        html.append("  <title>Bee Tree Report</title>\n");
-        html.append(getTreeCSS());
+        html.append("    <meta charset=\"UTF-8\">\n");
+        html.append("    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
+        html.append("    <title>CodeTriage Report - Bee Tree Structure</title>\n");
+        html.append("    <script src=\"https://d3js.org/d3.v7.min.js\"></script>\n");
+        html.append("    <script src=\"https://unpkg.com/d3-graphviz@5.0.2/build/d3-graphviz.min.js\"></script>\n");
+        html.append("    <style>\n");
+        html.append("        * { box-sizing: border-box; }\n");
+        html.append("        body { \n");
+        html.append("            margin: 0; \n");
+        html.append("            font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; \n");
+        html.append("            background: #fafafa; \n");
+        html.append("        }\n");
+        html.append("        #graph { \n");
+        html.append("            width: 100%; \n");
+        html.append("            height: 100vh; \n");
+        html.append("            background: white; \n");
+        html.append("        }\n");
+        html.append("    </style>\n");
         html.append("</head>\n");
         html.append("<body>\n");
-        html.append("<div id='tree-container'>\n");
-        html.append("<h1>Code Structure - Bee Tree</h1>\n");
-
-        renderNode(root, html, 0);
-
-        html.append("</div>\n");
-        html.append(getTreeJS());
+        html.append("<div id=\"graph\"></div>\n");
+        html.append("<script>\n");
+        html.append("    const treeDot = `").append(escapeBackticks(dot)).append("`;\n");
+        html.append("    d3.select(\"#graph\").graphviz()\n");
+        html.append("        .fit(true)\n");
+        html.append("        .zoom(true)\n");
+        html.append("        .renderDot(treeDot);\n");
+        html.append("</script>\n");
         html.append("</body>\n");
         html.append("</html>\n");
-
+        
         return html.toString();
-
     }
 
-    private static void renderNode(TreeNode node, StringBuilder html, int depth){
+    private static String renderDot(TreeNode root){
+        StringBuilder dot = new StringBuilder();
+
+        dot.append("digraph BeeTree {\n");
+        dot.append("  rankdir=TB;\n");
+        dot.append("  splines=ortho;\n");
+        dot.append("  nodesep=1;\n");
+        dot.append("  ranksep=2;\n");
+        dot.append("  node [shape=box, style=\"rounded,filled\", fontname=\"Arial\", fontsize=10, labeljust=l];\n");
+        dot.append("  edge [color=\"#666\", penwidth=1];\n\n");
+
+        // Recursively render nodes
+        renderNode(root, dot);
+
+        dot.append("}\n");
+        return dot.toString();
+    }
+
+    private static String escapeBackticks(String text) {
+        if (text == null) {
+            return "";
+        }
+        return text.replace("`", "\\`");
+    }
+
+    private static void renderNode(TreeNode node, StringBuilder dot){
+        // Only render nodes with valid types
         if (!isValidType(node.type)) {
             return;
         }
 
-        String indent = getIndent(depth);
-        String icon = getIcon(node.type);
-
-        if(node.type.equals("FOLDER")){
-            html.append(indent).append("<details class='tree-node tree-folder'>\n");
-            html.append(indent).append("  <summary class='tree-summary'>").append(icon).append(" ").append(escapeHtml(node.name)).append("</summary>\n");
-
-            for (TreeNode child : node.children){
-                if (isValidType(child.type)){
-                    renderNode(child, html, depth + 1);
-                }
-            }
-            html.append(indent).append("</details>\n");
-            
-        } 
+        String nodeId = sanitizeId(node.name);
+        String color = getColor(node.type);
+        String label = node.name;
         
-        else if (node.type.equals("FILE")){
-
-            html.append(indent).append("<details class='tree-node tree-file'>\n");
-            html.append(indent).append("  <summary class='tree-summary'>").append(icon).append(" ").append(escapeHtml(node.name)).append("</summary>\n");
-            
-            // Add file description if it exists
-            if (node.description != null && !node.description.isEmpty()) {
-                html.append(indent).append("  <div class='file-description'>\n");
-                html.append(indent).append("    <pre>").append(escapeHtml(node.description)).append("</pre>\n");
-                html.append(indent).append("  </div>\n");
-            }
-            
-            html.append(indent).append("</details>\n");
+        // For files, include description in label
+        if (node.type.equals("FILE") && node.description != null && !node.description.isEmpty()) {
+            label = node.name + "\\n\\n" + escapeLabel(node.description);
         }
-        
+
+        // Create node
+        dot.append(String.format("  \"%s\" [label=\"%s\", fillcolor=\"%s\"];\n", nodeId, label, color));
+
+        // Recursively render children and create edges
+        for (TreeNode child : node.children) {
+            if (isValidType(child.type)) {
+                String childId = sanitizeId(child.name);
+                dot.append(String.format("  \"%s\" -> \"%s\";\n", nodeId, childId));
+                renderNode(child, dot);
+            }
+        }
     }
 
     private static String sanitizeId(String name) {
@@ -74,95 +106,26 @@ public class BeeTreeRenderer {
     private static boolean isValidType(String type) {
         return type != null && ( type.equals("FOLDER") || type.equals("FILE") );
     }
-    
-    private static String getIcon(String type){
 
+    private static String getColor(String type) {
         switch(type) {
-
             case "FOLDER":
-                return "📁";
-
+                return "#2196F3";
             case "FILE":
-                return "📄";
-
+                return "#4CAF50";
             default:
-                return "*";
+                return "#000";
         }
     }
 
-
-    private static String getNodeClass(String type){
-
-        return "tree-" + type.toLowerCase();
-    }
-
-    private static String getIndent(int depth){
-        return "";
-    }
-
-    private static String escapeHtml(String text){
-
-        if (text == null){
+    private static String escapeLabel(String text) {
+        if (text == null) {
             return "";
         }
-
-        return text.replace("&", "&amp;")
-                   .replace("<", "&lt;")
-                   .replace(">", "&gt;")
-                   .replace("\"", "&quot;")
-                   .replace("'", "&#39;");
+        // Escape special characters for Graphviz labels
+        return text.replace("\\", "\\\\")
+                   .replace("\"", "\\\"")
+                   .replace("\n", "\\n")
+                   .replace("\r", "");
     }
-
-    private static String getTreeCSS(){
-
-        return "<style>\n" +
-            "#tree-container { background: white; border-top: 2px solid #ddd; margin-top: 20px; }\n" +
-            ".tree-node { margin: 4px 0; padding: 4px; border-radius: 4px; transition: 0.2s; }\n" +
-            ".tree-node:hover { background: #f5f5f5; padding-left: 8px; }\n" +
-            ".tree-icon { margin-right: 6px; display: inline-block; width: 16px; }\n" +
-            ".tree-details { cursor: pointer; user-select: none; }\n" +
-            ".tree-details[open] > .tree-summary .tree-icon::before { content: '▼ '; }\n" +
-            ".tree-details:not([open]) > .tree-summary .tree-icon::before { content: '▶ '; }\n" +
-            ".tree-summary { list-style: none; cursor: pointer; padding: 4px 0; font-weight: 500; }\n" +
-            ".tree-summary::-webkit-details-marker { display: none; }\n" +
-            ".modifier-badge { display: inline-block; padding: 2px 6px; background: #f3f3f3; " +
-            "border-radius: 3px; font-size: 11px; font-weight: 600; color: #666; margin-left: 6px; }\n" +
-            ".method-signature { display: inline-block; padding: 2px 6px; background: #e3f2fd; " +
-            "border-radius: 3px; font-size: 11px; color: #1565c0; margin-left: 6px; }\n" +
-            ".tree-folder { font-weight: 600; }\n" +
-            ".tree-file { font-weight: 500; }\n" +
-            ".tree-class { font-weight: 600; }\n" +
-            ".tree-method { font-style: italic; }\n" +
-            ".tree-import { color: #999; font-size: 12px; }\n" +
-            "</style>\n";
-
-    }
-
-    private static String getTreeJS() {
-        return "<script>\n" +
-            "// Tree interactivity handled by native <details> elements\n" +
-            "// No additional JS needed for basic functionality\n" +
-            "</script>\n";
-    }
-
-
-    private static String getColor(String type){
-
-        switch(type) {
-        case "FOLDER":
-            return "#2196F3";
-        case "FILE":
-            return "#4CAF50";
-        case "CLASS":
-            return "#FF9800";
-        case "METHOD":
-            return "#9C27B0";
-        case "IMPORT":
-            return "#999";
-        default:
-            return "#000";
-        }
-
-    }
-
 }

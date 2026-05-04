@@ -11,6 +11,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.SimpleName;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
 
 import java.io.File;
 import java.util.List;
@@ -58,7 +59,11 @@ public class FileParser {
             for(ClassOrInterfaceDeclaration clazz : classes){ 
                 String className = clazz.getNameAsString();
                 String modifier = getModifier(clazz.getModifiers());
-                List<MethodSig> methods = clazz.getMethods().stream().map(FileParser::toMethodSig).collect(Collectors.toList());
+                List<MethodSig> methods = new ArrayList<>();
+                
+                clazz.getMethods().stream().map(FileParser::toMethodSig).forEach(methods::add);
+
+                clazz.getConstructors().stream().map(c -> FileParser.toConstructorSig(c, className)).forEach(methods::add);
 
                 classInfoList.add(new ClassInfo(className, modifier, methods, new ArrayList<>(), new ArrayList<>(), new ArrayList<>()));
 
@@ -80,7 +85,7 @@ public class FileParser {
 
     private static MethodSig toMethodSig(MethodDeclaration method){
 
-        String params = method.getParameters().stream().map(p -> p.getType().toString()).collect(Collectors.joining(", "));
+        String params = method.getParameters().stream().map(p -> p.getType().toString() + " " + p.getNameAsString()).collect(Collectors.joining(", "));
 
         String returnType = method.getType().toString();
 
@@ -89,6 +94,17 @@ public class FileParser {
         return new MethodSig(method.getNameAsString(), params, returnType, modifier, new ArrayList<>());
 
 
+    }
+
+    // Never seen this type of decleration before 
+
+    private static MethodSig toConstructorSig(ConstructorDeclaration constructor, String className){
+
+        String params = constructor.getParameters().stream().map(p -> p.getType().toString() + " " + p.getNameAsString()).collect(Collectors.joining(", "));
+
+        String modifier = getModifier(constructor.getModifiers());
+
+        return new MethodSig(className, params, "void", modifier, new ArrayList<>());
     }
 
 

@@ -1,156 +1,89 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Bee Tree Report</title>
-<style>
-#tree-container { background: white; border-top: 2px solid #ddd; margin-top: 20px; }
-.tree-node { margin: 4px 0; padding: 4px; border-radius: 4px; transition: 0.2s; }
-.tree-node:hover { background: #f5f5f5; padding-left: 8px; }
-.tree-icon { margin-right: 6px; display: inline-block; width: 16px; }
-.tree-details { cursor: pointer; user-select: none; }
-.tree-details[open] > .tree-summary .tree-icon::before { content: '▼ '; }
-.tree-details:not([open]) > .tree-summary .tree-icon::before { content: '▶ '; }
-.tree-summary { list-style: none; cursor: pointer; padding: 4px 0; font-weight: 500; }
-.tree-summary::-webkit-details-marker { display: none; }
-.modifier-badge { display: inline-block; padding: 2px 6px; background: #f3f3f3; border-radius: 3px; font-size: 11px; font-weight: 600; color: #666; margin-left: 6px; }
-.method-signature { display: inline-block; padding: 2px 6px; background: #e3f2fd; border-radius: 3px; font-size: 11px; color: #1565c0; margin-left: 6px; }
-.tree-folder { font-weight: 600; }
-.tree-file { font-weight: 500; }
-.tree-class { font-weight: 600; }
-.tree-method { font-style: italic; }
-.tree-import { color: #999; font-size: 12px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeTriage Report - Bee Tree Structure</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/d3-graphviz@5.0.2/build/d3-graphviz.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: #fafafa; 
+        }
+        #graph { 
+            width: 100%; 
+            height: 100vh; 
+            background: white; 
+        }
+    </style>
 </head>
 <body>
-<div id='tree-container'>
-<h1>Code Structure - Bee Tree</h1>
-<details class='tree-node tree-folder'>
-  <summary class='tree-summary'>📁 root</summary>
-<details class='tree-node tree-folder'>
-  <summary class='tree-summary'>📁 cli</summary>
-<details class='tree-node tree-file'>
-  <summary class='tree-summary'>📄 ArgsParser.java</summary>
-  <div class='file-description'>
-    <pre>Classes:
-  public ArgsParser
-    Constructors:
-    Methods / Functions:
-      public Config parse | (String[])</pre>
-  </div>
-</details>
-<details class='tree-node tree-file'>
-  <summary class='tree-summary'>📄 Config.java</summary>
-  <div class='file-description'>
-    <pre>Classes:
-  public Config</pre>
-  </div>
-</details>
-</details>
-<details class='tree-node tree-folder'>
-  <summary class='tree-summary'>📁 CodeOverSight</summary>
-<details class='tree-node tree-file'>
-  <summary class='tree-summary'>📄 CodeOverSight.java</summary>
-  <div class='file-description'>
-    <pre>Classes:
-  public CodeOverSight
-    Constructors:
-    Methods / Functions:
-      public void main | (String[])</pre>
-  </div>
-</details>
-</details>
-<details class='tree-node tree-file'>
-  <summary class='tree-summary'>📄 CodeTriage.java</summary>
-  <div class='file-description'>
-    <pre>Classes:
-  public CodeTriage
-    Constructors:
-    Methods / Functions:
-      public void main | (String[])</pre>
-  </div>
-</details>
-<details class='tree-node tree-folder'>
-  <summary class='tree-summary'>📁 graph</summary>
-<details class='tree-node tree-file'>
-  <summary class='tree-summary'>📄 DotGenerator.java</summary>
-  <div class='file-description'>
-    <pre>Classes:
-  public DotGenerator
-    Constructors:
-    Methods / Functions:
-      public String generate | (List&lt;FileInfo&gt;, Config)
-      private String getNodeId | (FileInfo)
-      private String buildNodeLabel | (FileInfo)
-      private String resolveImport | (String, Set&lt;String&gt;, List&lt;FileInfo&gt;)</pre>
-  </div>
-</details>
-</details>
-<details class='tree-node tree-folder'>
-  <summary class='tree-summary'>📁 model</summary>
-<details class='tree-node tree-file'>
-  <summary class='tree-summary'>📄 FileInfo.java</summary>
-  <div class='file-description'>
-    <pre>Classes:
-  public FileInfo</pre>
-  </div>
-</details>
-<details class='tree-node tree-file'>
-  <summary class='tree-summary'>📄 MethodSig.java</summary>
-  <div class='file-description'>
-    <pre>Classes:
-  public MethodSig
-    Constructors:
-    Methods / Functions:
-      public String signature | ()</pre>
-  </div>
-</details>
-</details>
-<details class='tree-node tree-folder'>
-  <summary class='tree-summary'>📁 parser</summary>
-<details class='tree-node tree-file'>
-  <summary class='tree-summary'>📄 FileParser.java</summary>
-  <div class='file-description'>
-    <pre>Classes:
-  public FileParser
-    Constructors:
-    Methods / Functions:
-      public Optional&lt;FileInfo&gt; parse | (File, Config)
-      private Optional&lt;FileInfo&gt; parseInternal | (File)
-      private MethodSig toMethodSig | (MethodDeclaration)</pre>
-  </div>
-</details>
-</details>
-<details class='tree-node tree-folder'>
-  <summary class='tree-summary'>📁 render</summary>
-<details class='tree-node tree-file'>
-  <summary class='tree-summary'>📄 HtmlRenderer.java</summary>
-  <div class='file-description'>
-    <pre>Classes:
-  public HtmlRenderer
-    Constructors:
-    Methods / Functions:
-      public String render | (String, List&lt;FileInfo&gt;)</pre>
-  </div>
-</details>
-</details>
-<details class='tree-node tree-folder'>
-  <summary class='tree-summary'>📁 util</summary>
-<details class='tree-node tree-file'>
-  <summary class='tree-summary'>📄 FileLister.java</summary>
-  <div class='file-description'>
-    <pre>Classes:
-  public FileLister
-    Constructors:
-    Methods / Functions:
-      public List&lt;File&gt; listFiles | (Config)</pre>
-  </div>
-</details>
-</details>
-</details>
-</div>
+<div id="graph"></div>
 <script>
-// Tree interactivity handled by native <details> elements
-// No additional JS needed for basic functionality
+    const treeDot = `digraph BeeTree {
+  rankdir=TB;
+  splines=ortho;
+  nodesep=1;
+  ranksep=2;
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=10, labeljust=l];
+  edge [color="#666", penwidth=1];
+
+  "root" [label="root", fillcolor="#2196F3"];
+  "root" -> "cli";
+  "cli" [label="cli", fillcolor="#2196F3"];
+  "cli" -> "ArgsParser_java";
+  "ArgsParser_java" [label="ArgsParser.java\n\nClasses:\n  public ArgsParser\n    Methods / Functions:\n      public Config parse | (String[] args)", fillcolor="#4CAF50"];
+  "cli" -> "Config_java";
+  "Config_java" [label="Config.java\n\nClasses:\n  public Config", fillcolor="#4CAF50"];
+  "root" -> "CodeOverSight";
+  "CodeOverSight" [label="CodeOverSight", fillcolor="#2196F3"];
+  "CodeOverSight" -> "CodeOverSight_java";
+  "CodeOverSight_java" [label="CodeOverSight.java\n\nClasses:\n  public CodeOverSight\n    Methods / Functions:\n      public void main | (String[] args)", fillcolor="#4CAF50"];
+  "root" -> "CodeTriage_java";
+  "CodeTriage_java" [label="CodeTriage.java\n\nClasses:\n  public CodeTriage\n    Methods / Functions:\n      public void main | (String[] args)", fillcolor="#4CAF50"];
+  "root" -> "graph";
+  "graph" [label="graph", fillcolor="#2196F3"];
+  "graph" -> "DotGenerator_java";
+  "DotGenerator_java" [label="DotGenerator.java\n\nClasses:\n  public DotGenerator\n    Methods / Functions:\n      public String generate | (List<FileInfo> files, Config config)\n      private String getNodeId | (FileInfo file)\n      private String buildNodeLabel | (FileInfo file)\n      private String resolveImport | (String importName, Set<String> internalClasses, List<FileInfo> files)", fillcolor="#4CAF50"];
+  "root" -> "model";
+  "model" [label="model", fillcolor="#2196F3"];
+  "model" -> "ClassInfo_java";
+  "ClassInfo_java" [label="ClassInfo.java\n\nClasses:\n  public ClassInfo\n   Constructor parameters: String className, String modifier, List<MethodSig> methods, List<String> exceptions, List<String> interfaces, List<String> extensions\n    Methods / Functions:", fillcolor="#4CAF50"];
+  "model" -> "FileInfo_java";
+  "FileInfo_java" [label="FileInfo.java\n\nClasses:\n  public FileInfo\n   Constructor parameters: String path, String className, String packageName, List<MethodSig> methods, List<String> imports, List<ClassInfo> classes\n    Methods / Functions:", fillcolor="#4CAF50"];
+  "model" -> "MethodSig_java";
+  "MethodSig_java" [label="MethodSig.java\n\nClasses:\n  public MethodSig\n   Constructor parameters: String name, String params, String returnType, String modifier, List<String> exceptions\n    Methods / Functions:\n      public String signature | ()", fillcolor="#4CAF50"];
+  "model" -> "TreeNode_java";
+  "TreeNode_java" [label="TreeNode.java\n\nClasses:\n  public TreeNode\n   Constructor parameters: String name, String type\n    Methods / Functions:\n      public void addChild | (TreeNode child)\n      public void setFullPath | (String path)\n      public void setSignature | (String sig)\n      public void setDescription | (String desc)", fillcolor="#4CAF50"];
+  "root" -> "parser";
+  "parser" [label="parser", fillcolor="#2196F3"];
+  "parser" -> "FileParser_java";
+  "FileParser_java" [label="FileParser.java\n\nClasses:\n  public FileParser\n    Methods / Functions:\n      public Optional<FileInfo> parse | (File file, Config config)\n      private Optional<FileInfo> parseInternal | (File file)\n      private MethodSig toMethodSig | (MethodDeclaration method)\n      private MethodSig toConstructorSig | (ConstructorDeclaration constructor, String className)\n      private String getModifier | (com.github.javaparser.ast.NodeList<com.github.javaparser.ast.Modifier> modifiers)", fillcolor="#4CAF50"];
+  "root" -> "render";
+  "render" [label="render", fillcolor="#2196F3"];
+  "render" -> "BeeTreeRenderer_java";
+  "BeeTreeRenderer_java" [label="BeeTreeRenderer.java\n\nClasses:\n  public BeeTreeRenderer\n    Methods / Functions:\n      public String render | (TreeNode root)\n      private String renderDot | (TreeNode root)\n      private String escapeBackticks | (String text)\n      private void renderNode | (TreeNode node, StringBuilder dot)\n      private String sanitizeId | (String name)\n      private boolean isValidType | (String type)\n      private String getColor | (String type)\n      private String escapeLabel | (String text)", fillcolor="#4CAF50"];
+  "render" -> "HtmlRenderer_java";
+  "HtmlRenderer_java" [label="HtmlRenderer.java\n\nClasses:\n  public HtmlRenderer\n    Methods / Functions:\n      public void render | (String dot, List<FileInfo> fileInfos, List<File> sourceFiles, String rootPath, String outputPath)\n      private String readTemplate | (String templateName)\n      private String insertBeforeExtension | (String path, String insert)", fillcolor="#4CAF50"];
+  "render" -> "TreeRenderer_java";
+  "TreeRenderer_java" [label="TreeRenderer.java\n\nClasses:\n  public TreeRenderer\n    Methods / Functions:\n      public String render | (TreeNode root)\n      private void renderNode | (TreeNode node, StringBuilder dot)\n      private String sanitizeId | (String name)\n      private boolean isValidType | (String type)\n      private String getIcon | (String type)\n      private String getNodeClass | (String type)\n      private String getIndent | (int depth)\n      private String escapeHtml | (String text)\n      private String getTreeCSS | ()\n      private String getTreeJS | ()\n      private String getColor | (String type)", fillcolor="#4CAF50"];
+  "root" -> "util";
+  "util" [label="util", fillcolor="#2196F3"];
+  "util" -> "BeeTreeBuilder_java";
+  "BeeTreeBuilder_java" [label="BeeTreeBuilder.java\n\nClasses:\n  public BeeTreeBuilder\n    Methods / Functions:\n      public TreeNode buildTree | (List<File> sourceFiles, List<FileInfo> parsedFiles, String rootPath)\n      private String generateFileDescription | (FileInfo fileInfo)", fillcolor="#4CAF50"];
+  "util" -> "FileLister_java";
+  "FileLister_java" [label="FileLister.java\n\nClasses:\n  public FileLister\n    Methods / Functions:\n      public List<File> listFiles | (Config config)", fillcolor="#4CAF50"];
+  "util" -> "TreeBuilder_java";
+  "TreeBuilder_java" [label="TreeBuilder.java\n\nClasses:\n  public TreeBuilder\n    Methods / Functions:\n      public TreeNode buildTree | (List<File> sourceFiles, List<FileInfo> parsedFiles, String rootPath)", fillcolor="#4CAF50"];
+}
+`;
+    d3.select("#graph").graphviz()
+        .fit(true)
+        .zoom(true)
+        .renderDot(treeDot);
 </script>
 </body>
 </html>

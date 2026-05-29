@@ -128,8 +128,13 @@ public class BeeTreeBuilder{
                             String methodExceptions = method.exceptions != null && !method.exceptions.isEmpty() 
                                 ? " throws " + String.join(", ", method.exceptions) 
                                 : "";
+
                             desc.append("      ").append(method.modifier).append(" ").append(returnType).append(" ")
-                                .append(method.name).append(" | (").append(params).append(")").append(methodExceptions).append("\n");
+                                .append(method.name).append(" | (").append(params).append(")").append(methodExceptions)
+                                .append(" -> ").append(returnType).append("\n");
+
+                            // desc.append("      ").append(method.modifier).append(" ").append(returnType).append(" ")
+                            //     .append(method.name).append(" | (").append(params).append(")").append(methodExceptions).append("\n");
                         }
                     }
                 }

@@ -11,6 +11,7 @@ import com.codetriage.util.FileLister;
 import com.codetriage.util.BeeTreeBuilder;
 import com.codetriage.model.TreeNode;
 import com.codetriage.render.BeeTreeRenderer;
+import com.codetriage.render.BeeTreeJsonExporter;
 
 import java.awt.Desktop;
 import java.io.File;
@@ -61,6 +62,10 @@ public class CodeTriage {
             TreeNode beeTree = BeeTreeBuilder.buildTree(files, fileInfos, rootPath);
             String beeTreeHtml = BeeTreeRenderer.render(beeTree);
             Files.write(Paths.get("report-beeTree.html"), beeTreeHtml.getBytes());
+
+            // Generate Json report
+            String beeTreeJson = BeeTreeJsonExporter.exportBeeTree(beeTree);
+            Files.write(Paths.get("report-beetree.json"), beeTreeJson.getBytes());
 
             //Render HTML report
             HtmlRenderer.render(dot, fileInfos, files, rootPath, config.output);
